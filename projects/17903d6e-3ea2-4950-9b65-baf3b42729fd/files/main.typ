@@ -6,28 +6,24 @@
 
 
 #set text(
-  lang: "it"
+  lang: "it",
 )
 
 // show chapter on figure numbering
-#set figure(numbering: (..num) =>
-  numbering("1.1", counter(heading).get().first(), num.pos().first())
-)
+#set figure(numbering: (..num) => numbering("1.1", counter(heading).get().first(), num.pos().first()))
 
 // show chapter on equation numbering
-#set math.equation(numbering: (..num) =>
-  numbering("(1.1)", counter(heading).get().first(), num.pos().first())
-)
+#set math.equation(numbering: (..num) => numbering("(1.1)", counter(heading).get().first(), num.pos().first()))
 
 #set heading(numbering: "1.1")
 
 // only apply numbering up to h3
 #show heading: it => {
-    if (it.level > 3){
-        block(it.body)
-    } else {
-        block(counter(heading).display() + " " + it.body)
-    }
+  if (it.level > 3) {
+    block(it.body)
+  } else {
+    block(counter(heading).display() + " " + it.body)
+  }
 }
 
 // only apply numbering to figures with captions
@@ -62,7 +58,6 @@
 
 #include "chapters/chapter1.typ"
 #include "chapters/chapter2.typ"
-
 
 
 
