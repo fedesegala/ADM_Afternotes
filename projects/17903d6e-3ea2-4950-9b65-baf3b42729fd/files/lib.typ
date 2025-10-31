@@ -40,7 +40,7 @@
   // Set this to `none`, if you want to disable the table of contents.
   // More info: https://typst.app/docs/reference/model/outline/
   table-of-contents: outline(
-    depth: 3
+    depth: 3,
   ),
   // Display an appendix after the body but before the bibliography.
   appendix: (
@@ -100,13 +100,13 @@
 
         #text(3em)[*#title*]
         #v-space
-       
+
         #if image != none {
           align(center)[
-            #image(imagePath, width: 65%)  
+            #image(imagePath, width: 65%)
           ]
         }
-       
+
         #text(1.6em, author)
         #if abstract != none {
           v-space
@@ -130,7 +130,6 @@
   set par(leading: 0.7em, spacing: 1.35em, justify: true, linebreaks: "optimized")
   set list(indent: 2em, body-indent: 0.7em)
   set enum(indent: 2em, body-indent: 0.7em)
-
 
 
   // Add vertical space after headings.
@@ -322,7 +321,7 @@
 }
 
 
-#import "@preview/theorion:0.4.0": theorion-i18n, theorion-i18n-map, language-aware-start 
+#import "@preview/theorion:0.4.0": language-aware-start, theorion-i18n, theorion-i18n-map
 #let example-box(
   fill: rgb("#acb2bf"),
   ..args,
@@ -330,19 +329,19 @@
   body,
 ) = context {
   let title-i18n = theorion-i18n(theorion-i18n-map.at("example"))
-    // Main rendering
-    block(
-      stroke: language-aware-start(.25em + fill),
-      inset: language-aware-start(1em) + (top: .5em, bottom: .75em),
-      width: 100%,
-      ..args,
-      {
-        block(sticky: true, text(
-          fill: fill,
-          weight: "semibold",
-          title-i18n + ": " + title,
-        ))
-        body
-      },
-    )
-  }
+  // Main rendering
+  block(
+    stroke: language-aware-start(.25em + fill),
+    inset: language-aware-start(1em) + (top: .5em, bottom: .75em),
+    width: 100%,
+    ..args,
+    {
+      block(sticky: true, text(
+        fill: fill,
+        weight: "semibold",
+        title-i18n + ": " + title,
+      ))
+      body
+    },
+  )
+}
