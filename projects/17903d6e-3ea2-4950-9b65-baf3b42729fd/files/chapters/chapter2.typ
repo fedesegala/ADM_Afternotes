@@ -439,4 +439,23 @@ user = {
 L'utilizzo di `ObjectID` ci consente di avere accesso in lettura molto efficiente, tuttavia nel caso in cui avessimo bisogno di proprietà di utenti e locazioni che non sono presenti all'interno dei record della collection `checkins` in quel caso tali attributi dovrebbero essere replicati al loro interno, in modo da evitare di dover eseguire operazioni di aggregazione. Questo potrebbe risultare problematico, specialmente nel caso in cui sia necessario eliminare dei dati, infatti duplicando le informazioni, sarebbe complicato capire cosa andare ad eliminare e dove andarlo a fare.
 
 ==== Operazioni di Aggregazione
-All'interno di MongoDB le operazioni di aggregazione funzionano in maniera molto diversa da come funzionano in un database relazionale. 
+All'interno di MongoDB le operazioni di aggregazione funzionano in maniera molto diversa da come funzionano in un database relazionale. All'interno di MongoDB abbiamo a disposizione una *pipeline di aggregazione*. Vediamo un esempio di applicazione di questa pipeline, partendo dal seguente comando: 
+
+```javascript
+db.orders.aggregate([
+  // filtraggio
+  {$match: {status: "A"}},  
+  // raggruppamento
+  {$group: {_id: "$cust_id", total: {$sum: "$amount"}}}, 
+])
+```
+#v(-3em)
+#figure(
+  image("../images/aggregation_pipeline.png", width: 80%),
+  caption: [Esempio di pipeline di aggregazione in MongoDB],
+) <fig:aggregation_pipeline>
+
+Nell'esempio di #ref(<fig:aggregation_pipeline>) si nota come i passaggi principali di cui questa è costituita sono due: *matching* e *grouping*. Tuttavia queste non sono le uniche operazioni che è possibile effettuare in una pipeline di aggregazione. Andiamo di seguito a mostrare varie operazione assieme ad una breve descrizione:
+
+- *`match`*: filtra i documenti in ingresso in base a una certa condizione
+- *`group`*: raggruppa i documenti in sulla base di attributi comuni e calcola valori aggregati per ogni gruppo
