@@ -475,3 +475,44 @@ Come visto nell'esempio di sopra, all'interno dell'operazione di *grouping* è p
 - `$min`: calcola il valore minimo di un certo attributo
 - `$max`: calcola il valore massimo di un certo attributo
 - `$push`: crea una lista con tutti i valori di un certo attributo
+
+#example-box("Pipeline di aggregazione su una collection 'sales'", [
+
+  ```json
+  [
+    { item: "apple", qty: 10, store: "A", region: "north"}, 
+    { item: "apple", qty: 5, store: "B", region: "south"}, 
+    { item: "banana", qty: 7, store: "A", region: "north"},
+    { item: "banana", qty: 8, store: "B", region: "south"}, 
+    { item: "banana", qty: 3, store: "C", region: "north"}
+  ]
+  ```
+
+  Possiamo applicare la seguente pipeline di aggregazione: 
+
+  ```javascript
+  db.sales.aggregate([
+    // filtriamo i vari documenti
+    { $match: { region: "north" },  // filtra per regione 'north'
+      qty: {$gte: 5},               // e quantità maggiore o uguale a 5
+    },
+
+    {
+      $group: {
+        _id: "$item", // raggruppa per item
+        totalQty: { $sum: "$qty" }, // somma le quantità per ogni item
+        stores: { $push: "$store" }, // crea una lista di store per ogni item
+        }
+      }
+  ])
+  ```
+
+  Il risultato di questa pipeline sarà il seguente:
+
+  ```json
+  [
+    { "_id": "apple", "totalQty": 10, "stores": ["A"] },
+    { "_id": "banana", "totalQty": 10, "stores": ["A", "C"] }
+  ]
+  ```
+])
