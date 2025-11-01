@@ -26,10 +26,7 @@
 }
 
 #let list_twocols(body) = context {
-  let items = body
-    .children
-    .filter(x => x.func() == list.item)
-    .map(x => [#symbol("•") #x.body]) // add bullet + small horizontal space
+  let items = body.children.filter(x => x.func() == list.item).map(x => [#symbol("•") #x.body]) // add bullet + small horizontal space
   grid(
     columns: 2,
     column-gutter: 2em,
@@ -81,7 +78,7 @@ Il componente software che si fa carico di tutte le operazioni sulla base di dat
   caption: [Interazioni del DBMS],
 )<fig:dbms_interactions>
 
-A seconda delle necessità che vengono specificate dai requisiti, è possibile andare a concentrarsi su una specifica implementazione. Andando oltre alle peculiarità associate ad ogni diverso prodotto, è possibile identificare i seguenti elementi comuni a tutti i DMBS: 
+A seconda delle necessità che vengono specificate dai requisiti, è possibile andare a concentrarsi su una specifica implementazione. Andando oltre alle peculiarità associate ad ogni diverso prodotto, è possibile identificare i seguenti elementi comuni a tutti i DMBS:
 
 - *Gestione della memoria persistente*: si occupa di salvare i dati nel file system
 - *Gestione del buffer*: si occupa, collaborando con il gestore della memoria, di effettuare _swap in/out_ di varie pagine della memoria persistente in base a ciò che è richiesto dall'operazione che si sta eseguendo
@@ -93,19 +90,19 @@ Il gestore del buffer potrebbe sembrare molto simile al _sistema_ di paginazione
 - *Gestione delle transazioni*: si occupa di eseguire sequenze di operazioni in maniera atomica, mantenendo la consistenza del sistema
 - *Gestione della concorrenza*: si occupa di garantire che molti processi siano abilitati ad accedere al database nello stesso momento. In linea di massima garantisce che le richieste parallele seguano uno schedule sequenziale
 
-Per fare un esempio di ciò, immaginiamo che sia necessario gestire in maniera concorrente le seguenti transazioni: $T_1, T_2, T_3$; ci sono $(3!)$ 6 possibili scheduling sequenziali che possiamo scegliere di seguire per soddisfarle: 
+Per fare un esempio di ciò, immaginiamo che sia necessario gestire in maniera concorrente le seguenti transazioni: $T_1, T_2, T_3$; ci sono $(3!)$ 6 possibili scheduling sequenziali che possiamo scegliere di seguire per soddisfarle:
 
 #align(center)[
-#list_twocols[
-- $T_1, T_2, T_3$
-- $T_1, T_3, T_2$
-- $T_2, T_1, T_3$
-- $T_2, T_3, T_1$
-- $T_3, T_2, T_1$
-- $T_3, T_1, T_2$
-]]
+  #list_twocols[
+    - $T_1, T_2, T_3$
+    - $T_1, T_3, T_2$
+    - $T_2, T_1, T_3$
+    - $T_2, T_3, T_1$
+    - $T_3, T_2, T_1$
+    - $T_3, T_1, T_2$
+  ]]
 
-compito del gestore della concorrenza è quello di fare in modo che il risultato del sistema dopo aver eseguito in concorrenza le tre transazioni sia equivalente al risultato di uno casuale degli scheduling sequenziali di sopra riportati. 
+compito del gestore della concorrenza è quello di fare in modo che il risultato del sistema dopo aver eseguito in concorrenza le tre transazioni sia equivalente al risultato di uno casuale degli scheduling sequenziali di sopra riportati.
 
 - *Operatori fisici*: ne esistono alcuni che sono comuni a più famiglie di basi di dati, altri che sono specifici di singole famiglie. Si tratta di operazioni rese disponibili tramite API che quando eseguite su un insieme di dati garantiscono un certo risultato
 
@@ -126,7 +123,7 @@ La maggior parte di questi operatori fisici, nel caso di database relazionali, s
 - *Code di messaggi*: si tratta di un meccanismo pensato ad hoc per la gestione di esecuzione distribuita e dei dati in streaming
 
 == Database Management System Relazionali
-Tutti i database relazionali sono basati sul *modello dei dati relazionale*. Andiamo di seguito a definirne le varie peculiarità: 
+Tutti i database relazionali sono basati sul *modello dei dati relazionale*. Andiamo di seguito a definirne le varie peculiarità:
 
 - Un database è un _insieme di tabelle_ ognuna delle quali è caratterizzata da un *nome* che nello specifico è chiamato *relation symbol*
 - L'intestazione della relazione va ad identificare i nomi delle _colonne_ che nello specifico sono chiamati *attribute names* insieme al _dominio_ dal quale ciascun attributo può prendere valore
@@ -137,32 +134,41 @@ Tutti i database relazionali sono basati sul *modello dei dati relazionale*. And
   inset: 10pt,
   align: center,
   table.header(
-    [Simbolo di relazione #text(fill: green)[$R$]], [Attributo #text(fill: blue)[$A_1$]], [Attributo #text(fill: blue)[$A_2$]], [Attributo #text(fill: blue)[$A_3$]],
+    [Simbolo di relazione #text(fill: green)[$R$]],
+    [Attributo #text(fill: blue)[$A_1$]],
+    [Attributo #text(fill: blue)[$A_2$]],
+    [Attributo #text(fill: blue)[$A_3$]],
   ),
-  [tupla #text(fill: orange)[$t_1$]], [#text(fill: orange)[$v_11$]], [#text(fill: orange)[$v_12$]], [#text(fill: orange)[$v_13$]],
-  [tupla #text(fill: red)[$t_2$]], [#text(fill: red)[$v_21$]], [#text(fill: red)[$v_22$]],[#text(fill: red)[$v_23$]],
+  [tupla #text(fill: orange)[$t_1$]],
+  [#text(fill: orange)[$v_11$]],
+  [#text(fill: orange)[$v_12$]],
+  [#text(fill: orange)[$v_13$]],
+
+  [tupla #text(fill: red)[$t_2$]], [#text(fill: red)[$v_21$]], [#text(fill: red)[$v_22$]], [#text(fill: red)[$v_23$]],
 )
 
-#example-box("Modello relazionale", 
-  [
-    Di seguito mostriamo un'istanza del modello relazionale precedentemente illustrato: 
-  
+#example-box("Modello relazionale", [
+  Di seguito mostriamo un'istanza del modello relazionale precedentemente illustrato:
+
   #align(center)[
-  #table(
-    columns: (auto, auto, auto, auto),
-    inset: 10pt,
-    align: center,
-    table.header(
-      [#text(fill: green)[BookLending]], [#text(fill: blue)[BookID]], [#text(fill: blue)[ReaderID]], [#text(fill: blue)[ReturnDate]],
-    ),
-    [], [#text(fill: orange)[123]], [#text(fill: orange)[225]], [#text(fill: orange)[25-10-2016]],
-    [], [#text(fill: red)[234]], [#text(fill: red)[347]], [#text(fill: red)[31-10-2016]],
-  )
-]])
+    #table(
+      columns: (auto, auto, auto, auto),
+      inset: 10pt,
+      align: center,
+      table.header(
+        [#text(fill: green)[BookLending]],
+        [#text(fill: blue)[BookID]],
+        [#text(fill: blue)[ReaderID]],
+        [#text(fill: blue)[ReturnDate]],
+      ),
+      [], [#text(fill: orange)[123]], [#text(fill: orange)[225]], [#text(fill: orange)[25-10-2016]],
+      [], [#text(fill: red)[234]], [#text(fill: red)[347]], [#text(fill: red)[31-10-2016]],
+    )
+  ]])
 
 #pagebreak()
 
-Possiamo andare a dare le seguenti definizioni più formali: 
+Possiamo andare a dare le seguenti definizioni più formali:
 
 #definition(title: "Schema Relazionale")[
   È possibile definire lo *schema relazionale* di una base di dati tramite i seguenti oggetti:
@@ -172,9 +178,9 @@ Possiamo andare a dare le seguenti definizioni più formali:
   - Insieme delle dipendenze locali $Sigma_R$
 
   Possiamo unire gli oggetti di cui sopra tramite la seguente formula:
-$
-R = ({A_1, ..., A_n}, Sigma_R)
-$
+  $
+    R = ({A_1, ..., A_n}, Sigma_R)
+  $
 ]<def:relational_schema>
 
 #definition(title: "Schema della Base di Dati")[
@@ -187,33 +193,34 @@ $
   Possiamo unire gli oggetti di cui sopra tramite la seguente formula:
 
   $
-  D = ({R_1, ..., R_m}, Sigma)
+    D = ({R_1, ..., R_m}, Sigma)
   $
 ]<def:database_schema>
 
 #set math.equation(numbering: none)
 #example-box(
-    "Schema di una Base di Dati", 
-    [
+  "Schema di una Base di Dati",
+  [
     - Schema relazionale 1:
     $
-    #text[Book] = ({#text[BookID, Author, Title]}, Sigma_#text[Book])
+      #text[Book] = ({#text[BookID, Author, Title]}, Sigma_#text[Book])
     $
-    - Schema relazionale 2: 
+    - Schema relazionale 2:
     $
-    #text[BookLending] = ({#text[BookID, ReaderID, ReturnDate]}, Sigma_#text[Book])
+      #text[BookLending] = ({#text[BookID, ReaderID, ReturnDate]}, Sigma_#text[Book])
     $
     - Schema relazionale 3:
     $
-    #text[Reader] = ({#text[ReaderID, Name]}, Sigma_#text[Reader])
+      #text[Reader] = ({#text[ReaderID, Name]}, Sigma_#text[Reader])
     $
-    - Schema della base di dati: 
+    - Schema della base di dati:
     $
-    #text[Library] = ({#text[Book, BookLending, Reader]}, Sigma)
+      #text[Library] = ({#text[Book, BookLending, Reader]}, Sigma)
     $
-  ])
-    
- #set math.equation(numbering: "(1)")
+  ],
+)
+
+#set math.equation(numbering: "(1)")
 
 Sia in #ref(<def:relational_schema>) che in #ref(<def:database_schema>) compare la nozione di *dipendenza*; è però necessario chiarire le differenze tra queste:
 
@@ -226,26 +233,26 @@ Un esempio di dipendenze intra-relazionali sono le _dipendenze funzionali_, più
 Un esempio di queste dipendenze sono _dipendenze di inclusione_ su particolari chiavi esterne: BookLending.BookID #sym.subset.eq Book.BookID o ancora BookLending.ReaderID #sym.subset.eq Reader.ReaderID.
 
 === Progettazione di una Base di Dati
-Una volta presi in esame la situazione da rappresentare e i requisiti da questa richiesti, è possibile iniziare con la progettazione della base di dati. Dal momento che molti contesti presentano molte complicazioni e requisiti specifici, è bene avere un quadro il più generale possibile di ciò che si renderà necessario implementare; per questo motivo possiamo dividere la progettazione di un database in tre fasi fondamentali: 
+Una volta presi in esame la situazione da rappresentare e i requisiti da questa richiesti, è possibile iniziare con la progettazione della base di dati. Dal momento che molti contesti presentano molte complicazioni e requisiti specifici, è bene avere un quadro il più generale possibile di ciò che si renderà necessario implementare; per questo motivo possiamo dividere la progettazione di un database in tre fasi fondamentali:
 
 - definizione di un *modello concettuale*: serve a modellare ad alto livello la situazione presa in esame; tipicamente vengono impiegati i diagrammi entità-relazione.
   #figure(
     image("../images/dbms_interactions.png"),
-    caption: [Diagramma Entità-Relazione di una libreria]
+    caption: [Diagramma Entità-Relazione di una libreria],
   )
 
   #v(2em)
 - _traduzione_ dello schema relazionale in un *modello logico*: il processo da seguire per la traduzione è piuttosto semplice e standard; infatti tipicamente ogni entità viene di solito mappata in una relazione, così come ogni relazione, in base alla sua cardinalità può essere tradotta in maniera differente
 
-Alcuni design per una base di dati possono essere problematici. Di seguito andiamo ad indicare alcune forme di inconsistenza che possono presentarsi: 
+Alcuni design per una base di dati possono essere problematici. Di seguito andiamo ad indicare alcune forme di inconsistenza che possono presentarsi:
 
 - Alcune tabelle potrebbero contenere troppi valori, o addirittura valori *duplicati*
-- Potrebbero verificarsi anomalie nel momento in cui andiamo a manipolare i dati: 
+- Potrebbero verificarsi anomalie nel momento in cui andiamo a manipolare i dati:
   - *Anomalie di inserimento*: nel momento in cui andiamo ad inserire i dati abbiamo bisogno di tutti i valori ma alcuni potrebbero essere ancora sconosciuti
   - *Anomalie di cancellazione*: nel momento in cui andiamo a cancellare una tupla, potremmo andare a cancellare informazioni di cui abbiamo ancora bisogno in altri record di altre relazioni
   - *Anomalie di aggiornamento*: quando i dati sono memorizzati in maniera ridondante, questi devono essere modificati per tutte le loro occorrenze
 
-Le problematiche e le anomalie sopra elencate sono tipicamente ammortizzate applicando tecniche di *normalizzazione* della base di dati. L'obiettivo della normalizzazione è quello di distribuire i dati in maniera omogenea tra le tabelle. In base al tipo di normalizzazione che andiamo a garantire riusciamo a prevenire diversi tipi di anomalia: 
+Le problematiche e le anomalie sopra elencate sono tipicamente ammortizzate applicando tecniche di *normalizzazione* della base di dati. L'obiettivo della normalizzazione è quello di distribuire i dati in maniera omogenea tra le tabelle. In base al tipo di normalizzazione che andiamo a garantire riusciamo a prevenire diversi tipi di anomalia:
 
 - *1° Forma Normale*: non vengono ammessi attributi multivalore o composti
 - *2° Forma Normale*: tutti gli attributi non chiave sono completamente dipendenti dagli attributi chiave, in altre parole non deve esistere un sottoinsieme degli attributi chiave che può essere usato per derivare attributo non chiave
@@ -255,13 +262,13 @@ Le problematiche e le anomalie sopra elencate sono tipicamente ammortizzate appl
 === Query Relazionali
 Una volta che i dati sono memorizzati all'interno della nostra base di dati, possiamo chiederci in quale modo ottenere informazioni da questi. A questo scopo abbiamo a disposizione degli strumenti che sono noti con il nome di *query*.
 
-Le query sono strumenti che ci consentono di effettuare diversi tipi di operazioni sui dati: 
+Le query sono strumenti che ci consentono di effettuare diversi tipi di operazioni sui dati:
 
 - Specificare condizioni per selezionare solo tuple rilevanti
 - Restringere tabelle ad un sottoinsieme di attributi
 - Combinare valori provenienti da diverse tabelle
 
-Esistono diversi linguaggi per effettuare query a una base di dati: _calcolo relazionale_, _algebra relazionale_, _SQL_. Di seguito andiamo ad elencare alcuni operatori dell'algebra relazionale: 
+Esistono diversi linguaggi per effettuare query a una base di dati: _calcolo relazionale_, _algebra relazionale_, _SQL_. Di seguito andiamo ad elencare alcuni operatori dell'algebra relazionale:
 
 - *Proiezione* $pi$: utilizzata per restringere una tabella ad un sottoinsieme di attributi
 - *Selezione* $sigma$: utilizzata per selezionare solo alcune tuple di una tabella
@@ -270,7 +277,7 @@ Esistono diversi linguaggi per effettuare query a una base di dati: _calcolo rel
 - *Join naturale* #sym.join: utilizzato per combinare due tabelle sulla base di attributi comuni
 - *Operatori di join avanzati* come #sym.theta - join, equi-join, ...
 
-Le query relazionali,che si possono vedere come una catena di applicazioni di opperatori relazionali, possono essere visualizzate in strutture ad albero, questo tipo di visualizzazione porta con se alcuni vantaggi: 
+Le query relazionali,che si possono vedere come una catena di applicazioni di opperatori relazionali, possono essere visualizzate in strutture ad albero, questo tipo di visualizzazione porta con se alcuni vantaggi:
 
 - Mostra l'ordine di valutazione di ogni operazione
 - È utile nel contesto dell'ottimizzazione delle query
@@ -281,19 +288,22 @@ Le query relazionali,che si possono vedere come una catena di applicazioni di op
 
   set-style(content: (padding: 0.5em))
   tree.tree(
-    ($pi_#text[Name]$, (
-      $sigma_#text[Return date < 20/10/2016]$, 
+    (
+      $pi_#text[Name]$,
       (
-        [#sym.join],
+        $sigma_#text[Return date < 20/10/2016]$,
         (
-          [Reader]
+          [#sym.join],
+          (
+            [Reader]
+          ),
+          (
+            [BookLending]
+          ),
         ),
-        (
-          [BookLending]  
-        )
-      )
+      ),
     ),
-  ))
+  )
 })
 
 #let tree-right = canvas({
@@ -301,81 +311,87 @@ Le query relazionali,che si possono vedere come una catena di applicazioni di op
 
   set-style(content: (padding: 0.5em))
   tree.tree(
-    ($pi_#text[Name]$, (
-      
+    (
+      $pi_#text[Name]$,
+      (
         [#sym.join],
         (
           [Reader]
         ),
         (
           $sigma_#text[ReturnDate < 20/10/2016]$,
-          [BookLending]  
-        )
-      
+          [BookLending],
+        ),
+      ),
     ),
-  ))
+  )
 })
 
-#example-box("Alberi equivalenti per una query che lista il nome di tutti i lettori dei libri prestati che abbiano ReturnDate < 20/10/2016", [ 
-// Dispongo i due alberi in una figura con didascalia
-// Questa parte è già 100% Typst e non "sembra LaTeX"
-#figure(
-  grid(
-    columns: (1fr, 1fr), // Due colonne di uguale larghezza
-    gutter: 2em,         // Spazio tra le colonne
-    align: center,       // Centra gli alberi nelle colonne
-    
-    tree-left,
-    tree-right
-  ),
-  caption: [Due diversi piani di query per la stessa richiesta in algebra relazionale.]
-)<fig:algbratreecomparison>
-])
+#example-box(
+  "Alberi equivalenti per una query che lista il nome di tutti i lettori dei libri prestati che abbiano ReturnDate < 20/10/2016",
+  [
+    // Dispongo i due alberi in una figura con didascalia
+    // Questa parte è già 100% Typst e non "sembra LaTeX"
+    #figure(
+      grid(
+        columns: (1fr, 1fr),
+        // Due colonne di uguale larghezza
+        gutter: 2em,
+        // Spazio tra le colonne
+        align: center,
+        // Centra gli alberi nelle colonne
 
-Possiamo osservare come #ref(<fig:algbratreecomparison>) illustri due modi alternativi di eseguire la stessa query relazionale. Osservando attentamente l'ordine tra _join_ e _selezione_, è possibile notare che nell'albero di destra otteniamo una query più efficiente, dal momento che ci troveremo a effettuare un join dove una delle due tabelle da unire è stata prima filtrata. In questo modo ci troveremo a dover effettuare un confronto con molti meno record rispetto alla rappresentazione di sinistra. 
+        tree-left, tree-right,
+      ),
+      caption: [Due diversi piani di query per la stessa richiesta in algebra relazionale.],
+    )<fig:algbratreecomparison>
+  ],
+)
+
+Possiamo osservare come #ref(<fig:algbratreecomparison>) illustri due modi alternativi di eseguire la stessa query relazionale. Osservando attentamente l'ordine tra _join_ e _selezione_, è possibile notare che nell'albero di destra otteniamo una query più efficiente, dal momento che ci troveremo a effettuare un join dove una delle due tabelle da unire è stata prima filtrata. In questo modo ci troveremo a dover effettuare un confronto con molti meno record rispetto alla rappresentazione di sinistra.
 
 === Transazioni e Gestione della Concorrenza
-Quando andiamo a modificare i dati all'interno di una base di dati, possiamo andare incontro a diverse tipologie di problematiche. Di seguito andiamo ad elencarne alcune: 
+Quando andiamo a modificare i dati all'interno di una base di dati, possiamo andare incontro a diverse tipologie di problematiche. Di seguito andiamo ad elencarne alcune:
 
 - *Integrità logica dei dati*: dobbiamo assicurarci che tutti i valori scritti siano corretti e che siano effettivamente il risultato atteso dall'esecuzione di un'operazione
 - *Integrità fisica e recovery*: dobbiamo garantire la persistenza dei dati assieme alla possibilità di recuperarli nel caso in cui si verifichino dei crash di sistema
 - *Gestione di più utenti*: dobbiamo permettere agli utenti di operare in maniera concorrente sulla stessa base di dati senza che ci siano interferenze
 
-Tutte le questioni sopra elencate possono essere indirizzate tramite l'impiego di *transazioni*. 
+Tutte le questioni sopra elencate possono essere indirizzate tramite l'impiego di *transazioni*.
 
 #definition(title: "Transazione")[
-  Una *transazione* è una sequenza di operazioni di _lettura e scrittura_ su una base di dati con le seguenti proprietà: 
+  Una *transazione* è una sequenza di operazioni di _lettura e scrittura_ su una base di dati con le seguenti proprietà:
 
   - Deve essere trattata come *entità atomica* di esecuzione
   - Deve portare la base di dati da uno stato consistente ad un nuovo stato anch'esso consistente
 ]
 
-L'esempio più tipico di una transazione è quello di un trasferimento di denaro da un conto bancario ad un altro. Di seguito specifichiamo alcune delle proprietà che le basi di dati devono rispettare affinché possiamo affermare che gestiscano le transazioni correttamente: 
+L'esempio più tipico di una transazione è quello di un trasferimento di denaro da un conto bancario ad un altro. Di seguito specifichiamo alcune delle proprietà che le basi di dati devono rispettare affinché possiamo affermare che gestiscano le transazioni correttamente:
 
 - *Atomicità*: data una transazione possiamo eseguire tutte le operazioni di questa, oppure nessuna, non è possibile eseguire una transazione in modo _parziale_
 - *Consistenza*: dopo l'esecuzione di una transazione tutti i valori nella base di dati devono essere corretti rispetto ai vincoli e alle dipendenze intra-inter relazionali
 - *Isolamento*: transazioni concorrenti di utenti differenti non devono interferire tra loro
 - *Durabilità*: è necessario che i risultati di una transazione rimangano persistenti anche a seguito di possibili crash di sistema. Per garantire questa proprietà di solito si utilizza un *transaction log*, nel quale tutte le transazioni vengono registrate
 
-Le proprietà sopra elencate sono anche dette *ACID*, utilizzando le loro iniziali per formare l'acronimo. 
+Le proprietà sopra elencate sono anche dette *ACID*, utilizzando le loro iniziali per formare l'acronimo.
 
 === Problematiche del Modello Relazionale
-L'impiego di modelli relazionali può portare con sé alcune problematiche dovute intrinsecamente a come vengono impiegate tabelle e relazioni. Andiamo ad elencare alcune problematiche di seguito: 
+L'impiego di modelli relazionali può portare con sé alcune problematiche dovute intrinsecamente a come vengono impiegate tabelle e relazioni. Andiamo ad elencare alcune problematiche di seguito:
 
 - *Overloading semantico*: il modello relazionale rappresenta sia entità che relazione tramite l'utilizzo di _tabelle_, non esiste infatti in modo per rappresentare separatamente i due concetti
 - *Struttura dati omogenea*: il modello relazionale assume omogeneità sia orizzontale che verticale. L'omogeneità orizzontale implica che tutte le tuple hanno valori per gli stessi attributi; quella verticale si riferisce al fatto che, data una colonna, i suoi valori provengono tutti dallo stesso dominio. Inoltre ogni cella può contenere soltanto valori atomici, il che potrebbe risultare limitante in alcuni contesti
 - *Supporto limitato alla ricorsione*: è molto complicato andare a definire query ricorsive in SQL; nel caso ad esempio in cui ci trovassimo a dover lavorare su strutture a grafo sarebbe veramente complicato utilizzare un modello relazionale
 
 == Nuovi Requisiti
-Dopo aver descritto in maniera approfondita tutte le peculiarità di SQL e del modello relazionale che va ad implementare, spostiamo la nostra attenzione su dei _nuovi requisiti_ che situazioni odierne ci portano a dover soddisfare. 
+Dopo aver descritto in maniera approfondita tutte le peculiarità di SQL e del modello relazionale che va ad implementare, spostiamo la nostra attenzione su dei _nuovi requisiti_ che situazioni odierne ci portano a dover soddisfare.
 
 Il primo di questi è sicuramente legato a dati che hanno bisogno di essere organizzati in *strutture* sempre più *complesse* come ad esempio nei social network.
 
-Se un tempo le operazioni di lettura erano molto più frequenti rispetto alle operazioni di scrittura, il mondo moderno e l'utilizzo di nuove tecnologie ci pongono davanti ad un cambio di paradigma dove spesso è anche necessario andare a *scrivere* *in maniera* *frequente* sulle nostre basi di dati. 
+Se un tempo le operazioni di lettura erano molto più frequenti rispetto alle operazioni di scrittura, il mondo moderno e l'utilizzo di nuove tecnologie ci pongono davanti ad un cambio di paradigma dove spesso è anche necessario andare a *scrivere* *in maniera* *frequente* sulle nostre basi di dati.
 
-Dal momento che il mondo contemporaneo è sempre più _data-centric_, è necessario dover gestire una quantità sempre maggiore di dati, il che sarebbe impossibile utilizzando una singola macchina, rendendo necessario *distribuire i dati* su molti server interconnessi (_cloud storage_). 
+Dal momento che il mondo contemporaneo è sempre più _data-centric_, è necessario dover gestire una quantità sempre maggiore di dati, il che sarebbe impossibile utilizzando una singola macchina, rendendo necessario *distribuire i dati* su molti server interconnessi (_cloud storage_).
 
-Tutte le esigenze di sopra aprono la strada all'utilizzo di un nuovo approccio, quello *NoSQL*, nel quale alcune proprietà e garanzie del modello relazionale vengono trascurate al fine di provare a soddisfare in maniera migliore i nuovi requisiti. Di seguito elenchiamo alcune delle differenze tra gli approcci NoSQL e il tradizionale SQL: 
+Tutte le esigenze di sopra aprono la strada all'utilizzo di un nuovo approccio, quello *NoSQL*, nel quale alcune proprietà e garanzie del modello relazionale vengono trascurate al fine di provare a soddisfare in maniera migliore i nuovi requisiti. Di seguito elenchiamo alcune delle differenze tra gli approcci NoSQL e il tradizionale SQL:
 
 - Il modello dei dati potrebbe essere diverso da quello tradizionale basato sulle tabelle
 - Accesso programmatico alla base di dati  o con strumenti diversi da SQL
@@ -383,4 +399,3 @@ Tutte le esigenze di sopra aprono la strada all'utilizzo di un nuovo approccio, 
 - Capacità di gestire dato senza uno schema specifico
 - Supporto alla distribuzione dei dati
 - Requisito di aderenza alle proprietà ACID che viene alleggerito, specialmente in termini di consistenza, rispetto ai DBMS tradizionali
-

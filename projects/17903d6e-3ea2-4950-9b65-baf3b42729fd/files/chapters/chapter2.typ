@@ -438,23 +438,25 @@ user = {
 
 L'utilizzo di `ObjectID` ci consente di avere accesso in lettura molto efficiente, tuttavia nel caso in cui avessimo bisogno di proprietà di utenti e locazioni che non sono presenti all'interno dei record della collection `checkins` in quel caso tali attributi dovrebbero essere replicati al loro interno, in modo da evitare di dover eseguire operazioni di aggregazione. Questo potrebbe risultare problematico, specialmente nel caso in cui sia necessario eliminare dei dati, infatti duplicando le informazioni, sarebbe complicato capire cosa andare ad eliminare e dove andarlo a fare.
 
-==== Operazioni di Aggregazione
-All'interno di MongoDB le operazioni di aggregazione funzionano in maniera molto diversa da come funzionano in un database relazionale. All'interno di MongoDB abbiamo a disposizione una *pipeline di aggregazione*. 
+=== Operazioni di Aggregazione in MongoDB
+All'interno di MongoDB le operazioni di aggregazione funzionano in maniera molto diversa da come funzionano in un database relazionale.
+==== Pipeline di Aggregazione
+All'interno di MongoDB abbiamo a disposizione una *pipeline di aggregazione*.
 
 #example-box("Semplice pipeline di aggregazione in MongoDB", [
-```javascript
-db.orders.aggregate([
-  // filtraggio
-  {$match: {status: "A"}},
-  // raggruppamento
-  {$group: {_id: "$cust_id", total: {$sum: "$amount"}}},
-])
-```
-#v(-3em)
-#figure(
-  image("../images/aggregation_pipeline.png", width: 80%),
-  caption: [Rappresentazione grafica della pipeline di aggregazione specificata nel codice sopra],
-) <fig:aggregation_pipeline>
+  ```javascript
+  db.orders.aggregate([
+    // filtraggio
+    {$match: {status: "A"}},
+    // raggruppamento
+    {$group: {_id: "$cust_id", total: {$sum: "$amount"}}},
+  ])
+  ```
+  #v(-3em)
+  #figure(
+    image("../images/aggregation_pipeline.png", width: 80%),
+    caption: [Rappresentazione grafica della pipeline di aggregazione specificata nel codice sopra],
+  ) <fig:aggregation_pipeline>
 ])<example-prova>
 
 Nell'esempio di #ref(<fig:aggregation_pipeline>) si nota come i passaggi principali di cui questa è costituita sono due: *matching* e *grouping*. Tuttavia queste non sono le uniche operazioni che è possibile effettuare in una pipeline di aggregazione. Andiamo di seguito a mostrare varie operazione assieme ad una breve descrizione:
@@ -480,15 +482,15 @@ Come visto nell'esempio di sopra, all'interno dell'operazione di *grouping* è p
 
   ```json
   [
-    { item: "apple", qty: 10, store: "A", region: "north"}, 
-    { item: "apple", qty: 5, store: "B", region: "south"}, 
+    { item: "apple", qty: 10, store: "A", region: "north"},
+    { item: "apple", qty: 5, store: "B", region: "south"},
     { item: "banana", qty: 7, store: "A", region: "north"},
-    { item: "banana", qty: 8, store: "B", region: "south"}, 
+    { item: "banana", qty: 8, store: "B", region: "south"},
     { item: "banana", qty: 3, store: "C", region: "north"}
   ]
   ```
 
-  Possiamo applicare la seguente pipeline di aggregazione: 
+  Possiamo applicare la seguente pipeline di aggregazione:
 
   ```javascript
   db.sales.aggregate([
@@ -516,3 +518,116 @@ Come visto nell'esempio di sopra, all'interno dell'operazione di *grouping* è p
   ]
   ```
 ])
+
+È possibile andare ad applicare un'operazione nominata *aggregazione 'by window'*, della quale vediamo un esempio.
+
+#example-box("Aggregazione 'by window'", [
+  ```javascript
+  db.cakeSales.aggregate([
+    $setWindowFields: {   // inizio dell'operazione di windowing
+      partitionBy: "$state", // partiziona per stato
+      sortBy: {orderDate: 1}, // ordina per data
+      output: { // definizione del campo di output
+        cumulativeQuantityForState: {
+          $sum: "$quantity",
+          window: {
+            documents: ["unbounded", "current"] // considera documenti dal primo a quello corrente (somma cumulativa)
+          }
+        }
+      }
+    }
+  ])
+  ```
+])
+
+Dall'esempio di sopra possiamo comprendere alcuni aspetti legati al *windowing*:
+- `$setWindowFields` serve a permettere di calcolari funzioni _windowed_ su ogni documento; permettendo di aggiungere o sostituire campi basati sui valori in una determinata finestra
+- `$partitionBy` divide i documenti in gruppi separati su cui calcolare la funzione di finestra; in questo caso i calcoli saranno effettuati separatamente per ogni stato
+- `$sum` calcola la somma dei valori del campo `quantity` all'interno della finestra specificata
+- `window: {documents: ["unbounded", "current"]}` specifica che la finestra deve includere tutti i documenti dal primo fino a quello corrente, permettendo così di calcolare una *somma cumulativa*
+
+Oltre all'aggregazione 'by window' è possibile effettuare un'altra tipologia di aggregazione, detta '*bucket aggregation*'. Di seguito ne vediamo un esempio.
+
+#example-box("Bucket Aggregation", [
+```javascript
+{
+  $bucket: {
+    groupBy: <expression>, // espressione su cui basare il raggruppamento
+    boundaries: [ <lowerbound1>, <lowerbound2>, ... ], // definizione dei confini dei bucket
+    default: <literal>, // bucket di default per valori fuori dai confini
+    output: { // definizione dei campi di output per ogni bucket
+    <field1>: { <accumulator1> : <expression1>  },
+    ...
+    <fieldN>: { <accumulatorN> : <expressionN> }
+  }
+}
+```
+])
+
+Per quanto le varie aggregazioni presentate possano risultare concettualmente simili è importante capire quali siano le differenze tra di esse. Andremo perciò a mostrarle nella seguente tabella. 
+
+- *`group`*: raggruppa secondo un valore discreto, calcolando un documento per gruppo
+- *`bucket`*: raggruppa per intervalli di valori, calcolando un documento per intervallo (bucket) specificato
+- *`window`*: calcola valori cumulativi o su finestre mobili, calcolando un documento per ogni documento in ingresso; la peculiarità in questo caso è che si rende necessario specificare un ordine sui documenti in ingresso
+
+Vediamo di seguito alcuni ulteri esempi di operazioni di aggregazione in MongoDB.
+
+#example-box("Aggregazione 1", [
+```javascript
+db.things.aggregate([
+  { $group: {_id: $parity$, sum: {$sum: $value} }}
+])
+
+> { "result" : [
+    { "_id": "even", "sum": 102 },
+    { "_id": "odd", "sum": 97 }
+  ]
+}
+```
+])
+
+#pagebreak()
+
+#example-box("Aggregazione 2", [
+```javascript
+db.zipcodes.aggregate([
+  { $group: {
+    _id:  "$state",
+    totalPop: { $sum: "$pop" },
+  }}, 
+  {
+    $match: { totalPop: { $gte: 10^6 } }
+  }
+])
+```
+])
+
+#example-box("Aggregazione 3", [
+La seguente query consente di trovare per ogni stato la città più grande e la più piccola in termini di popolazione:
+```javascript
+db.zipcodes.aggregate([
+  { $group: {_id: {"$state", city: "$city"}, pop: {$sum: "$pop"}}}, 
+  { $sort: {pop: 1}}, 
+  { $group: {
+    _id: "$_id.state", 
+    biggestCity: {$last: "$_id.city"}, 
+    biggestPop: {$last: "$pop"}, 
+    smallestCity: {$first: "$_id.city"},
+    smallestPop: {$first: "$pop"}
+  }},
+  { $project: {
+    _id: 0, // non mostrare il campo _id
+    state: "$_id",
+    biggestCity: {name: "$biggestCity", population: "$biggestPop"},
+    smallestCity: {name: "$smallestCity", population: "$smallestPop"},
+  }}
+])
+```
+])
+
+#example-box("Aggregazione 4", [
+La query seguente mostra il funzionamente dell'operatore `$geonear` all'interno di una pipeline di aggregazione:
+```javascript
+```
+])
+==== Map Reduce in MongoDB
