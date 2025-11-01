@@ -457,9 +457,9 @@ All'interno di MongoDB abbiamo a disposizione una *pipeline di aggregazione*.
     image("../images/aggregation_pipeline.png", width: 80%),
     caption: [Rappresentazione grafica della pipeline di aggregazione specificata nel codice sopra],
   ) <fig:aggregation_pipeline>
-])<example-prova>
+])
 
-Nell'esempio di #ref(<fig:aggregation_pipeline>) si nota come i passaggi principali di cui questa è costituita sono due: *matching* e *grouping*. Tuttavia queste non sono le uniche operazioni che è possibile effettuare in una pipeline di aggregazione. Andiamo di seguito a mostrare varie operazione assieme ad una breve descrizione:
+Nell'esempio di @fig:aggregation_pipeline si nota come i passaggi principali di cui questa è costituita sono due: *matching* e *grouping*. Tuttavia queste non sono le uniche operazioni che è possibile effettuare in una pipeline di aggregazione. Andiamo di seguito a mostrare varie operazione assieme ad una breve descrizione:
 
 - *`match`*: filtra i documenti in ingresso in base a una certa condizione
 - *`group`*: raggruppa i documenti in sulla base di attributi comuni e calcola valori aggregati per ogni gruppo
@@ -628,6 +628,108 @@ db.zipcodes.aggregate([
 #example-box("Aggregazione 4", [
 La query seguente mostra il funzionamente dell'operatore `$geonear` all'interno di una pipeline di aggregazione:
 ```javascript
+db.places.aggregate([
+  {
+    $geoNear: {
+      near: {type: "Point", coordinates: [ -73.9667, 40.78 ]},
+      distanceField: "dist.calculated",
+      maxDistance: 2, 
+      query: { type: "public" },  // filtra per tipo 'public'
+      includeLocs: "dist.location",
+      spherical: true
+    }
+  }, // ... altri step della catena
+])
+
+> {
+  "_id": 8, 
+  "name": "Sara D. Roosevelt Park", 
+  "type": "public",
+  "location": { 
+    "type": "Point", "coordinates": [ -73.9935, 40.7186 ] 
+  },
+  "dist": { 
+    "calculated": 1.8259649934237,
+    "location": { 
+      "type": "Point", "coordinates": [ -73.9935, 40.7186 ] 
+    }
+  }
+}
 ```
 ])
+
 ==== Map Reduce in MongoDB
+MongoDB supporta nativamente l'utilizzo di Map-Reduce per effettuare operazioni di aggregazione sui dati memorizzati. Di seguito viene mostrata la sintassi per effettuare questa operazione. 
+
+#align(center)[
+#block(width: 90%)[
+```javascript
+db.collection.mapReduce(
+  <mapFunction>,    // funzione di mapping
+  <reduceFunction>, // funzione di riduzione
+  {
+    out: <collection>, // nome della collection di output
+  }
+)
+```
+]]
+
+Vediamo di seguito un esempio di utilizzo di questo comando per replicare i risultati della pipeline di aggregazione in @fig:aggregation_pipeline.
+
+#example-box("Algoritmo MapReduce in MongoDB", [
+```javascript
+db.orders.mapReduce(
+  function() {emit(this.cust_id, this.amount);}, // map function
+  function(key, values) {return Array.sum(values);}, // reduce function
+  {
+    query: {status: "A"}, // filtro per status 'A'
+    out: "order_totals"   // output nella collection 'order_totals'
+  }
+)
+```
+])
+
+In generale l'algoritmo di MapReduce è estremamente flessibile e potente, tuttavia presenta alcuni svantaggi:
+- Le performance sono generalmente inferiori rispetto all'utilizzo della pipeline di aggregazione, specialmente per operazioni semplici
+- La scrittura delle funzioni di mapping e riduzione richiede l'utilizzo di JavaScript, il che può risultare scomodo per chi non ha familiarità con questo linguaggio
+- La manutenzione del codice può risultare più complessa rispetto all'utilizzo della pipeline di aggregazione, specialmente per operazioni complesse
+
+==== Alcune evoluzioni di MongoDB
+A partire dalla versione 3.2 di MongoDB sono state introdotte alcune funzionalità che vanno a migliorare le capacità di aggregazione del sistema. In particolare è stata introdotta la possibilità di utilizzare un *left-outer join*. L'utilizzo di questo operatore è possibile all'interno delle pipeline di aggregazione combinato a tutti gli altri operatori già visti e viene utilizzato tramite il comando *`lookup`*. Il comportamento che ci attendiamo da questo operatore è visibile in @fig:lookup.
+#figure(
+  image("../images/lookup.png", width: 60%),
+  caption: [Esempio di utilizzo dell'operatore `$lookup` per effettuare un left-outer join]
+)<fig:lookup>
+
+#pagebreak()
+Di seguito andiamo a mostrare la sintassi del comando
+#align(center)[
+#block(width: 90%)[
+```javascript
+{
+  $lookup: {
+    from: <collection to join>,
+    localField: <field from the input documents>,
+    foreignField: <field from the documents of the "from" collection>,
+    as: <output array field>
+  }
+}
+```
+]]
+
+A partire da MongoDB 3.4 e 3.6 sono state introdotte ulteriori funzionalità: 
+
+- *`graphLookup`*: consente di eseguire ricerche ricorsive all'interno di una gerarchia di documenti, permettendo di esplorare relazioni complesse tra i dati (*aggregazione ricorsiva*)
+- *lookup* con condizioni di join multiple
+- *views*: permettono di creare viste virtuali basate su query di aggregazione, consentendo di presentare i dati in modi diversi senza duplicarli fisicamente
+
+Altre importanti funzionalità introdotte nelle versioni successive includono: 
+
+- *Transazioni multi-documento*
+- *Transazioni distribuite*: consentono di eseguire transazioni che coinvolgono più shard in un cluster distribuito
+- *Views materializzate*: viste che memorizzano fisicamente i risultati di una query di aggregazione per migliorare le performance
+- *Unione di Pipeline*: consente di combinare i risultati di più pipeline di aggregazione in un'unica pipeline
+- *Funzioni di aggregazione personalizzate*: permette di definire funzioni di aggregazione personalizzate per operazioni specifiche non coperte dalle funzioni predefinite
+- *Supporto alle time series*: ottimizzazioni specifiche per la gestione di dati temporali, come serie storiche di misurazioni o eventi
+
+=== Todo Maybe: forse torneremo qui per paralre di sharded deployments
