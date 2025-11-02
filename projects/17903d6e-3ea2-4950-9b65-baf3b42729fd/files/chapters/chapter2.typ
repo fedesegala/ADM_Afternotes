@@ -6,6 +6,15 @@
 #show: codly-init.with()
 #import "../lib.typ": *
 
+// apply numbering up to h3
+#show heading: it => {
+  if (it.level > 3) {
+    block(it.body)
+  } else {
+    block(counter(heading).display() + " " + it.body)
+  }
+}
+
 
 = Key-Value Stores e Document Databases
 Nell'ultimo decennio i database relazionali sono stati particolarmente apprezzati grazie alla loro flessibilità; purtroppo non sono noti per le loro *performance*.
@@ -33,6 +42,7 @@ In generale, ci si riferisce a MapReduce come un approccio di programmazione che
 
 #ref(<fig:mapreduce-unooptimized>) illustra chiaramente il funzionamento dei vari passaggi necessari al funzionamento dell'algoritmo MapReduce.
 
+#v(-2em)
 #figure(
   image("../images/mapreduce.png"),
   caption: [Esempio di applicazione dell'algoritmo MapReduce per contare le occorrenze di ogni parola all'interno di un input],
@@ -44,6 +54,7 @@ In generale, ci si riferisce a MapReduce come un approccio di programmazione che
 - È possibile sfruttare la *località* dei dati in modo da processare i dati direttamente sulla macchina che li sta "ospitando" in modo da ridurre il più possibile il traffico sulla rete.
 - È possibile migliorare ulteriormente quanto presente in #ref(<fig:mapreduce-unooptimized>) applicando una procedura di *combinazione*, che consenta di combinare i risultati intermedi invece di mandarli alla procedura di riduzione in formato grezzo, tuttavia non è sempre garantito che questa operazione sia implementata sui sistemi che scegliamo di utilizzare
 
+#v(-2em)
 #figure(
   image("../images/mapcombinereduce.png"),
   caption: [Applicazione della funzionalità di combine al metodo MapReduce],
@@ -547,6 +558,7 @@ Dall'esempio di sopra possiamo comprendere alcuni aspetti legati al *windowing*:
 
 Oltre all'aggregazione 'by window' è possibile effettuare un'altra tipologia di aggregazione, detta '*bucket aggregation*'. Di seguito ne vediamo un esempio.
 
+#pagebreak()
 #example-box("Bucket Aggregation", [
   ```javascript
   {
@@ -695,6 +707,7 @@ In generale l'algoritmo di MapReduce è estremamente flessibile e potente, tutta
 
 ==== Alcune evoluzioni di MongoDB
 A partire dalla versione 3.2 di MongoDB sono state introdotte alcune funzionalità che vanno a migliorare le capacità di aggregazione del sistema. In particolare è stata introdotta la possibilità di utilizzare un *left-outer join*. L'utilizzo di questo operatore è possibile all'interno delle pipeline di aggregazione combinato a tutti gli altri operatori già visti e viene utilizzato tramite il comando *`lookup`*. Il comportamento che ci attendiamo da questo operatore è visibile in @fig:lookup.
+#v(-2em)
 #figure(
   image("../images/lookup.png", width: 60%),
   caption: [Esempio di utilizzo dell'operatore `$lookup` per effettuare un left-outer join],

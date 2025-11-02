@@ -36,13 +36,6 @@
   // The contents for the preface page. This will be displayed after the cover page. Can
   // be omitted if you don't have one.
   preface: none,
-  // The result of a call to the `outline` function or `none`.
-  // Set this to `none`, if you want to disable the table of contents.
-  // More info: https://typst.app/docs/reference/model/outline/
-  table-of-contents: outline(
-    depth: 3,
-  ),
-  // Display an appendix after the body but before the bibliography.
   appendix: (
     enabled: false,
     title: "",
@@ -57,21 +50,6 @@
   chapter-pagebreak: true,
   // Whether to display a maroon circle next to external links.
   external-link-circle: true,
-  // Display an index of figures (images).
-  figure-index: (
-    enabled: true,
-    title: "",
-  ),
-  // Display an index of tables
-  table-index: (
-    enabled: false,
-    title: "",
-  ),
-  // Display an index of listings (code blocks).
-  listing-index: (
-    enabled: false,
-    title: "",
-  ),
   // The content of your work.
   body,
 ) = {
@@ -157,11 +135,6 @@
     page(preface)
   }
 
-  // Display table of contents.
-  if table-of-contents != none {
-    table-of-contents
-  }
-
   // Configure page numbering and footer.
   set page(
     footer: context {
@@ -238,75 +211,6 @@
     }
     body
   }
-
-  // Display appendix before the bibliography.
-  if appendix.enabled {
-    pagebreak()
-    heading(level: 1)[#appendix.at("title", default: "Appendix")]
-
-    // For heading prefixes in the appendix, the standard convention is A.1.1.
-    let num-fmt = appendix.at("heading-numbering-format", default: "A.1.1.")
-
-    counter(heading).update(0)
-    set heading(
-      outlined: false,
-      numbering: (..nums) => {
-        let vals = nums.pos()
-        if vals.len() > 0 {
-          let v = vals.slice(0)
-          return numbering(num-fmt, ..v)
-        }
-      },
-    )
-
-    appendix.body
-  }
-
-  // Display bibliography.
-  if bibliography != none {
-    pagebreak()
-    show std-bibliography: set text(0.85em)
-    // Use default paragraph properties for bibliography.
-    show std-bibliography: set par(leading: 0.65em, justify: false, linebreaks: auto)
-    bibliography
-  }
-
-  // Display indices of figures, tables, and listings.
-  let fig-t(kind) = figure.where(kind: kind)
-  let has-fig(kind) = counter(fig-t(kind)).get().at(0) > 0
-  if figure-index.enabled or table-index.enabled or listing-index.enabled {
-    show outline: set heading(outlined: true)
-    context {
-      let imgs = figure-index.enabled and has-fig(image)
-      let tbls = table-index.enabled and has-fig(table)
-      let lsts = listing-index.enabled and has-fig(raw)
-      if imgs or tbls or lsts {
-        // Note that we pagebreak only once instead of each each individual index. This is
-        // because for documents that only have a couple of figures, starting each index
-        // on new page would result in superfluous whitespace.
-        pagebreak()
-      }
-
-      if imgs {
-        outline(
-          title: figure-index.at("title", default: "Indice delle Figure"),
-          target: fig-t(image),
-        )
-      }
-      if tbls {
-        outline(
-          title: table-index.at("title", default: "Indice delle Tabelle"),
-          target: fig-t(table),
-        )
-      }
-      if lsts {
-        outline(
-          title: listing-index.at("title", default: "Index of Listings"),
-          target: fig-t(raw),
-        )
-      }
-    }
-  }
 }
 
 // This function formats its `body` (content) into a blockquote.
@@ -364,18 +268,4 @@
     row-gutter: par.leading,
     ..items
   )
-}
-
-#let setup-numbering = {
-  set heading(numbering: "1.")
-  set figure(numbering: num => {
-    let chapter = counter(heading).get().first()
-    let fig = num
-    numbering("1.1", chapter, fig)
-  })
-}
-
-#let chapter-figure-numbering = num => {
-  let chapter = counter(heading).get().first()
-  numbering("1.1", chapter, num)
 }

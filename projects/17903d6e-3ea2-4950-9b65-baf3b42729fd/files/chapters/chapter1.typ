@@ -6,24 +6,15 @@
 // #import cosmos.clouds: *
 #show: show-theorion
 
-#let enum_twocols(body) = context {
-  let items = body
-    .children
-    .filter(x => x.func() == enum.item)
-    .enumerate()
-    .map(((i, x)) => [#numbering(enum.numbering, i + 1) #x.body])
-  set raw(lang: "r")
-  grid(columns: 2, column-gutter: 1.65em, row-gutter: par.leading, ..items)
-}
 
-#let list_twocols(body) = context {
-  let items = body.children.filter(x => x.func() == list.item).map(x => [#symbol("•") #x.body]) // add bullet + small horizontal space
-  grid(
-    columns: 2,
-    column-gutter: 2em,
-    row-gutter: par.leading,
-    ..items
-  )
+
+// apply numbering up to h3
+#show heading: it => {
+  if (it.level > 3) {
+    block(it.body)
+  } else {
+    block(counter(heading).display() + " " + it.body)
+  }
 }
 
 = Introduzione
@@ -63,7 +54,7 @@ Tipicamente è complicato che una base di dati supporti tutte le caratteristiche
 
 == Componenti di un Database
 Il componente software che si fa carico di tutte le operazioni sulla base di dati è il *database management system* (DBMS). #ref(<fig:dbms_interactions>) illustra come molti altri componenti nel sistema operativo vadano a interagire tra di loro e con questo importante elemento.
-
+#v(-2em)
 #figure(
   image("../images/dbms_interactions.png"),
   caption: [Interazioni del DBMS],
@@ -120,6 +111,23 @@ Tutti i database relazionali sono basati sul *modello dei dati relazionale*. And
 - L'intestazione della relazione va ad identificare i nomi delle _colonne_ che nello specifico sono chiamati *attribute names* insieme al _dominio_ dal quale ciascun attributo può prendere valore
 - L'insieme delle _righe_ (*tuple*) di una tabella ne vanno a definire il contenuto
 
+Di seguito vedremo le definizioni di *schema relazionale* e *schema della base di dati* con alcuni esempi per meglio comprendere questi concetti fondamentali.
+
+#definition(title: "Schema Relazionale")[
+  È possibile definire lo *schema relazionale* di una base di dati tramite i seguenti oggetti:
+
+  - Simbolo di relazione $R$
+  - Insieme degli attributi $A_1, ..., A_n$
+  - Insieme delle dipendenze locali $Sigma_R$
+
+  Possiamo unire gli oggetti di cui sopra tramite la seguente formula:
+  $
+    R = ({A_1, ..., A_n}, Sigma_R)
+  $
+]<def:relational_schema>
+
+
+Di seguito possiamo osservare la come lo schema relazionale possa essere visto dal punto di vista di una tabella:
 #table(
   columns: (auto, auto, auto, auto),
   inset: 10pt,
@@ -138,6 +146,7 @@ Tutti i database relazionali sono basati sul *modello dei dati relazionale*. And
   [tupla #text(fill: red)[$t_2$]], [#text(fill: red)[$v_21$]], [#text(fill: red)[$v_22$]], [#text(fill: red)[$v_23$]],
 )
 
+#pagebreak()
 #example-box("Modello relazionale", [
   Di seguito mostriamo un'istanza del modello relazionale precedentemente illustrato:
 
@@ -157,23 +166,6 @@ Tutti i database relazionali sono basati sul *modello dei dati relazionale*. And
     )
   ]])
 
-#pagebreak()
-
-Possiamo andare a dare le seguenti definizioni più formali:
-
-#definition(title: "Schema Relazionale")[
-  È possibile definire lo *schema relazionale* di una base di dati tramite i seguenti oggetti:
-
-  - Simbolo di relazione $R$
-  - Insieme degli attributi $A_1, ..., A_n$
-  - Insieme delle dipendenze locali $Sigma_R$
-
-  Possiamo unire gli oggetti di cui sopra tramite la seguente formula:
-  $
-    R = ({A_1, ..., A_n}, Sigma_R)
-  $
-]<def:relational_schema>
-
 #definition(title: "Schema della Base di Dati")[
   È possibile andare a definire lo *schema della base di dati* tramite i seguenti oggetti:
 
@@ -187,6 +179,8 @@ Possiamo andare a dare le seguenti definizioni più formali:
     D = ({R_1, ..., R_m}, Sigma)
   $
 ]<def:database_schema>
+
+
 
 #set math.equation(numbering: none)
 #example-box(
@@ -227,6 +221,7 @@ Un esempio di queste dipendenze sono _dipendenze di inclusione_ su particolari c
 Una volta presi in esame la situazione da rappresentare e i requisiti da questa richiesti, è possibile iniziare con la progettazione della base di dati. Dal momento che molti contesti presentano molte complicazioni e requisiti specifici, è bene avere un quadro il più generale possibile di ciò che si renderà necessario implementare; per questo motivo possiamo dividere la progettazione di un database in tre fasi fondamentali:
 
 - definizione di un *modello concettuale*: serve a modellare ad alto livello la situazione presa in esame; tipicamente vengono impiegati i diagrammi entità-relazione.
+  #v(-2em)
   #figure(
     image("../images/dbms_interactions.png"),
     caption: [Diagramma Entità-Relazione di una libreria],
