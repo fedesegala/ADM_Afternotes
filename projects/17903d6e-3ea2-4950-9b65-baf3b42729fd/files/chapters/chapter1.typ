@@ -1,19 +1,10 @@
 #import "@preview/theorion:0.4.0": *
 #import cosmos.fancy: *
 #import "@preview/cetz:0.4.2": canvas, draw, tree
-#import "../lib.typ": example-box
+#import "../lib.typ": *
 // #import cosmos.rainbow: *
 // #import cosmos.clouds: *
 #show: show-theorion
-
-#set text(lang: "it")
-
-// 1. Change the counters and numbering:
-#set-inherited-levels(1)
-#set-zero-fill(true)
-#set-leading-zero(true)
-#set-theorion-numbering("1.1")
-
 
 #let enum_twocols(body) = context {
   let items = body

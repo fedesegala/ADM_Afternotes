@@ -4,8 +4,7 @@
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.1": *
 #show: codly-init.with()
-#import "../lib.typ": example-box
-
+#import "../lib.typ": *
 
 
 = Key-Value Stores e Document Databases
@@ -549,22 +548,22 @@ Dall'esempio di sopra possiamo comprendere alcuni aspetti legati al *windowing*:
 Oltre all'aggregazione 'by window' è possibile effettuare un'altra tipologia di aggregazione, detta '*bucket aggregation*'. Di seguito ne vediamo un esempio.
 
 #example-box("Bucket Aggregation", [
-```javascript
-{
-  $bucket: {
-    groupBy: <expression>, // espressione su cui basare il raggruppamento
-    boundaries: [ <lowerbound1>, <lowerbound2>, ... ], // definizione dei confini dei bucket
-    default: <literal>, // bucket di default per valori fuori dai confini
-    output: { // definizione dei campi di output per ogni bucket
-    <field1>: { <accumulator1> : <expression1>  },
-    ...
-    <fieldN>: { <accumulatorN> : <expressionN> }
+  ```javascript
+  {
+    $bucket: {
+      groupBy: <expression>, // espressione su cui basare il raggruppamento
+      boundaries: [ <lowerbound1>, <lowerbound2>, ... ], // definizione dei confini dei bucket
+      default: <literal>, // bucket di default per valori fuori dai confini
+      output: { // definizione dei campi di output per ogni bucket
+      <field1>: { <accumulator1> : <expression1>  },
+      ...
+      <fieldN>: { <accumulatorN> : <expressionN> }
+    }
   }
-}
-```
+  ```
 ])
 
-Per quanto le varie aggregazioni presentate possano risultare concettualmente simili è importante capire quali siano le differenze tra di esse. Andremo perciò a mostrarle nella seguente tabella. 
+Per quanto le varie aggregazioni presentate possano risultare concettualmente simili è importante capire quali siano le differenze tra di esse. Andremo perciò a mostrarle nella seguente tabella.
 
 - *`group`*: raggruppa secondo un valore discreto, calcolando un documento per gruppo
 - *`bucket`*: raggruppa per intervalli di valori, calcolando un documento per intervallo (bucket) specificato
@@ -573,120 +572,120 @@ Per quanto le varie aggregazioni presentate possano risultare concettualmente si
 Vediamo di seguito alcuni ulteri esempi di operazioni di aggregazione in MongoDB.
 
 #example-box("Aggregazione 1", [
-```javascript
-db.things.aggregate([
-  { $group: {_id: $parity$, sum: {$sum: $value} }}
-])
+  ```javascript
+  db.things.aggregate([
+    { $group: {_id: $parity$, sum: {$sum: $value} }}
+  ])
 
-> { "result" : [
-    { "_id": "even", "sum": 102 },
-    { "_id": "odd", "sum": 97 }
-  ]
-}
-```
+  > { "result" : [
+      { "_id": "even", "sum": 102 },
+      { "_id": "odd", "sum": 97 }
+    ]
+  }
+  ```
 ])
 
 #pagebreak()
 
 #example-box("Aggregazione 2", [
-```javascript
-db.zipcodes.aggregate([
-  { $group: {
-    _id:  "$state",
-    totalPop: { $sum: "$pop" },
-  }}, 
-  {
-    $match: { totalPop: { $gte: 10^6 } }
-  }
-])
-```
+  ```javascript
+  db.zipcodes.aggregate([
+    { $group: {
+      _id:  "$state",
+      totalPop: { $sum: "$pop" },
+    }},
+    {
+      $match: { totalPop: { $gte: 10^6 } }
+    }
+  ])
+  ```
 ])
 
 #example-box("Aggregazione 3", [
-La seguente query consente di trovare per ogni stato la città più grande e la più piccola in termini di popolazione:
-```javascript
-db.zipcodes.aggregate([
-  { $group: {_id: {"$state", city: "$city"}, pop: {$sum: "$pop"}}}, 
-  { $sort: {pop: 1}}, 
-  { $group: {
-    _id: "$_id.state", 
-    biggestCity: {$last: "$_id.city"}, 
-    biggestPop: {$last: "$pop"}, 
-    smallestCity: {$first: "$_id.city"},
-    smallestPop: {$first: "$pop"}
-  }},
-  { $project: {
-    _id: 0, // non mostrare il campo _id
-    state: "$_id",
-    biggestCity: {name: "$biggestCity", population: "$biggestPop"},
-    smallestCity: {name: "$smallestCity", population: "$smallestPop"},
-  }}
-])
-```
+  La seguente query consente di trovare per ogni stato la città più grande e la più piccola in termini di popolazione:
+  ```javascript
+  db.zipcodes.aggregate([
+    { $group: {_id: {"$state", city: "$city"}, pop: {$sum: "$pop"}}},
+    { $sort: {pop: 1}},
+    { $group: {
+      _id: "$_id.state",
+      biggestCity: {$last: "$_id.city"},
+      biggestPop: {$last: "$pop"},
+      smallestCity: {$first: "$_id.city"},
+      smallestPop: {$first: "$pop"}
+    }},
+    { $project: {
+      _id: 0, // non mostrare il campo _id
+      state: "$_id",
+      biggestCity: {name: "$biggestCity", population: "$biggestPop"},
+      smallestCity: {name: "$smallestCity", population: "$smallestPop"},
+    }}
+  ])
+  ```
 ])
 
 #example-box("Aggregazione 4", [
-La query seguente mostra il funzionamente dell'operatore `$geonear` all'interno di una pipeline di aggregazione:
-```javascript
-db.places.aggregate([
-  {
-    $geoNear: {
-      near: {type: "Point", coordinates: [ -73.9667, 40.78 ]},
-      distanceField: "dist.calculated",
-      maxDistance: 2, 
-      query: { type: "public" },  // filtra per tipo 'public'
-      includeLocs: "dist.location",
-      spherical: true
-    }
-  }, // ... altri step della catena
-])
+  La query seguente mostra il funzionamente dell'operatore `$geonear` all'interno di una pipeline di aggregazione:
+  ```javascript
+  db.places.aggregate([
+    {
+      $geoNear: {
+        near: {type: "Point", coordinates: [ -73.9667, 40.78 ]},
+        distanceField: "dist.calculated",
+        maxDistance: 2,
+        query: { type: "public" },  // filtra per tipo 'public'
+        includeLocs: "dist.location",
+        spherical: true
+      }
+    }, // ... altri step della catena
+  ])
 
-> {
-  "_id": 8, 
-  "name": "Sara D. Roosevelt Park", 
-  "type": "public",
-  "location": { 
-    "type": "Point", "coordinates": [ -73.9935, 40.7186 ] 
-  },
-  "dist": { 
-    "calculated": 1.8259649934237,
-    "location": { 
-      "type": "Point", "coordinates": [ -73.9935, 40.7186 ] 
+  > {
+    "_id": 8,
+    "name": "Sara D. Roosevelt Park",
+    "type": "public",
+    "location": {
+      "type": "Point", "coordinates": [ -73.9935, 40.7186 ]
+    },
+    "dist": {
+      "calculated": 1.8259649934237,
+      "location": {
+        "type": "Point", "coordinates": [ -73.9935, 40.7186 ]
+      }
     }
   }
-}
-```
+  ```
 ])
 
 ==== Map Reduce in MongoDB
-MongoDB supporta nativamente l'utilizzo di Map-Reduce per effettuare operazioni di aggregazione sui dati memorizzati. Di seguito viene mostrata la sintassi per effettuare questa operazione. 
+MongoDB supporta nativamente l'utilizzo di Map-Reduce per effettuare operazioni di aggregazione sui dati memorizzati. Di seguito viene mostrata la sintassi per effettuare questa operazione.
 
 #align(center)[
-#block(width: 90%)[
-```javascript
-db.collection.mapReduce(
-  <mapFunction>,    // funzione di mapping
-  <reduceFunction>, // funzione di riduzione
-  {
-    out: <collection>, // nome della collection di output
-  }
-)
-```
-]]
+  #block(width: 90%)[
+    ```javascript
+    db.collection.mapReduce(
+      <mapFunction>,    // funzione di mapping
+      <reduceFunction>, // funzione di riduzione
+      {
+        out: <collection>, // nome della collection di output
+      }
+    )
+    ```
+  ]]
 
 Vediamo di seguito un esempio di utilizzo di questo comando per replicare i risultati della pipeline di aggregazione in @fig:aggregation_pipeline.
 
 #example-box("Algoritmo MapReduce in MongoDB", [
-```javascript
-db.orders.mapReduce(
-  function() {emit(this.cust_id, this.amount);}, // map function
-  function(key, values) {return Array.sum(values);}, // reduce function
-  {
-    query: {status: "A"}, // filtro per status 'A'
-    out: "order_totals"   // output nella collection 'order_totals'
-  }
-)
-```
+  ```javascript
+  db.orders.mapReduce(
+    function() {emit(this.cust_id, this.amount);}, // map function
+    function(key, values) {return Array.sum(values);}, // reduce function
+    {
+      query: {status: "A"}, // filtro per status 'A'
+      out: "order_totals"   // output nella collection 'order_totals'
+    }
+  )
+  ```
 ])
 
 In generale l'algoritmo di MapReduce è estremamente flessibile e potente, tuttavia presenta alcuni svantaggi:
@@ -698,32 +697,32 @@ In generale l'algoritmo di MapReduce è estremamente flessibile e potente, tutta
 A partire dalla versione 3.2 di MongoDB sono state introdotte alcune funzionalità che vanno a migliorare le capacità di aggregazione del sistema. In particolare è stata introdotta la possibilità di utilizzare un *left-outer join*. L'utilizzo di questo operatore è possibile all'interno delle pipeline di aggregazione combinato a tutti gli altri operatori già visti e viene utilizzato tramite il comando *`lookup`*. Il comportamento che ci attendiamo da questo operatore è visibile in @fig:lookup.
 #figure(
   image("../images/lookup.png", width: 60%),
-  caption: [Esempio di utilizzo dell'operatore `$lookup` per effettuare un left-outer join]
+  caption: [Esempio di utilizzo dell'operatore `$lookup` per effettuare un left-outer join],
 )<fig:lookup>
 
 #pagebreak()
 Di seguito andiamo a mostrare la sintassi del comando
 #align(center)[
-#block(width: 90%)[
-```javascript
-{
-  $lookup: {
-    from: <collection to join>,
-    localField: <field from the input documents>,
-    foreignField: <field from the documents of the "from" collection>,
-    as: <output array field>
-  }
-}
-```
-]]
+  #block(width: 90%)[
+    ```javascript
+    {
+      $lookup: {
+        from: <collection to join>,
+        localField: <field from the input documents>,
+        foreignField: <field from the documents of the "from" collection>,
+        as: <output array field>
+      }
+    }
+    ```
+  ]]
 
-A partire da MongoDB 3.4 e 3.6 sono state introdotte ulteriori funzionalità: 
+A partire da MongoDB 3.4 e 3.6 sono state introdotte ulteriori funzionalità:
 
 - *`graphLookup`*: consente di eseguire ricerche ricorsive all'interno di una gerarchia di documenti, permettendo di esplorare relazioni complesse tra i dati (*aggregazione ricorsiva*)
 - *lookup* con condizioni di join multiple
 - *views*: permettono di creare viste virtuali basate su query di aggregazione, consentendo di presentare i dati in modi diversi senza duplicarli fisicamente
 
-Altre importanti funzionalità introdotte nelle versioni successive includono: 
+Altre importanti funzionalità introdotte nelle versioni successive includono:
 
 - *Transazioni multi-documento*
 - *Transazioni distribuite*: consentono di eseguire transazioni che coinvolgono più shard in un cluster distribuito

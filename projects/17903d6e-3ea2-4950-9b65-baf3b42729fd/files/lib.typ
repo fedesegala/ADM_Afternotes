@@ -345,3 +345,37 @@
     },
   )
 }
+
+#let enum_twocols(body) = context {
+  let items = body
+    .children
+    .filter(x => x.func() == enum.item)
+    .enumerate()
+    .map(((i, x)) => [#numbering(enum.numbering, i + 1) #x.body])
+  set raw(lang: "r")
+  grid(columns: 2, column-gutter: 1.65em, row-gutter: par.leading, ..items)
+}
+
+#let list_twocols(body) = context {
+  let items = body.children.filter(x => x.func() == list.item).map(x => [#symbol("•") #x.body]) // add bullet + small horizontal space
+  grid(
+    columns: 2,
+    column-gutter: 2em,
+    row-gutter: par.leading,
+    ..items
+  )
+}
+
+#let setup-numbering = {
+  set heading(numbering: "1.")
+  set figure(numbering: num => {
+    let chapter = counter(heading).get().first()
+    let fig = num
+    numbering("1.1", chapter, fig)
+  })
+}
+
+#let chapter-figure-numbering = num => {
+  let chapter = counter(heading).get().first()
+  numbering("1.1", chapter, num)
+}

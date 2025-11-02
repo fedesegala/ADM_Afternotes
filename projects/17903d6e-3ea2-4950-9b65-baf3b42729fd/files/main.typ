@@ -1,9 +1,11 @@
 #import "lib.typ": *
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.1": *
+#import "@preview/headcount:0.1.0": dependent-numbering, reset-counter
 #show: codly-init.with()
 
-
+#import "@preview/theorion:0.4.0": *
+#import cosmos.fancy: *
 
 #set text(
   lang: "it",
@@ -54,6 +56,14 @@
   listing-index: (enabled: true),
 )
 
+#set figure(numbering: dependent-numbering("1.1"))
+#show heading: reset-counter(counter(figure.where(kind: image)))
+
+// 1. Change the counters and numbering:
+#set-inherited-levels(1)
+#set-zero-fill(true)
+#set-leading-zero(true)
+#set-theorion-numbering("1.1")
 
 
 #include "chapters/chapter1.typ"
