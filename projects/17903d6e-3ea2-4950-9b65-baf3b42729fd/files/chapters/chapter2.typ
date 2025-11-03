@@ -6,6 +6,11 @@
 #show: codly-init.with()
 #import "../lib.typ": *
 
+#import "@preview/headcount:0.1.0": dependent-numbering, reset-counter
+
+#set figure(numbering: dependent-numbering("1.1"))
+#show heading: reset-counter(counter(figure.where(kind: image)))
+
 // apply numbering up to h3
 #show heading: it => {
   if (it.level > 3) {
@@ -14,6 +19,7 @@
     block(counter(heading).display() + " " + it.body)
   }
 }
+
 
 
 = Key-Value Stores e Document Databases
@@ -54,7 +60,6 @@ In generale, ci si riferisce a MapReduce come un approccio di programmazione che
 - È possibile sfruttare la *località* dei dati in modo da processare i dati direttamente sulla macchina che li sta "ospitando" in modo da ridurre il più possibile il traffico sulla rete.
 - È possibile migliorare ulteriormente quanto presente in #ref(<fig:mapreduce-unooptimized>) applicando una procedura di *combinazione*, che consenta di combinare i risultati intermedi invece di mandarli alla procedura di riduzione in formato grezzo, tuttavia non è sempre garantito che questa operazione sia implementata sui sistemi che scegliamo di utilizzare
 
-#v(-2em)
 #figure(
   image("../images/mapcombinereduce.png"),
   caption: [Applicazione della funzionalità di combine al metodo MapReduce],
@@ -137,7 +142,6 @@ Similmente ad un database relazionale, è invece possibile operare query per il 
 L’aspetto più rilevante nell’utilizzo di questo modello risiede nella *semplicità* con cui è possibile rappresentare e gestire diverse strutture dati. Il concetto chiave a cui si deve questa immediatezza è la *de-normalizzazione*. Come mostrato in @fig:denormalization, la de-normalizzazione semplifica la struttura della base di dati accorpando le informazioni che altrimenti sarebbero distribuite su più tabelle o entità.
 
 Questa scelta, tuttavia, introduce un importante svantaggio: la *gestione delle modifiche ai dati*. Se, ad esempio, un utente compare in più contesti e si rende necessario aggiornare i dati relativi agli ordini a lui associati, sarà necessario applicare la modifica in *ogni copia* presente nel sistema. In caso contrario, la base di dati rischierebbe di diventare incoerente.
-#v(-2em)
 #figure(
   image("../images/denormalization.png"),
   caption: [

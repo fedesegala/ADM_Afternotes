@@ -2,11 +2,15 @@
 #import cosmos.fancy: *
 #import "@preview/cetz:0.4.2": canvas, draw, tree
 #import "../lib.typ": *
+#import "@preview/headcount:0.1.0": dependent-numbering, reset-counter
+
 // #import cosmos.rainbow: *
 // #import cosmos.clouds: *
 #show: show-theorion
 
 
+#set figure(numbering: dependent-numbering("1.1"))
+#show heading: reset-counter(counter(figure.where(kind: image)))
 
 // apply numbering up to h3
 #show heading: it => {
@@ -54,7 +58,6 @@ Tipicamente è complicato che una base di dati supporti tutte le caratteristiche
 
 == Componenti di un Database
 Il componente software che si fa carico di tutte le operazioni sulla base di dati è il *database management system* (DBMS). #ref(<fig:dbms_interactions>) illustra come molti altri componenti nel sistema operativo vadano a interagire tra di loro e con questo importante elemento.
-#v(-2em)
 #figure(
   image("../images/dbms_interactions.png"),
   caption: [Interazioni del DBMS],
@@ -221,7 +224,6 @@ Un esempio di queste dipendenze sono _dipendenze di inclusione_ su particolari c
 Una volta presi in esame la situazione da rappresentare e i requisiti da questa richiesti, è possibile iniziare con la progettazione della base di dati. Dal momento che molti contesti presentano molte complicazioni e requisiti specifici, è bene avere un quadro il più generale possibile di ciò che si renderà necessario implementare; per questo motivo possiamo dividere la progettazione di un database in tre fasi fondamentali:
 
 - definizione di un *modello concettuale*: serve a modellare ad alto livello la situazione presa in esame; tipicamente vengono impiegati i diagrammi entità-relazione.
-  #v(-2em)
   #figure(
     image("../images/dbms_interactions.png"),
     caption: [Diagramma Entità-Relazione di una libreria],

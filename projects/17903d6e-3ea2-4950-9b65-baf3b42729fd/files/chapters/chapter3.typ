@@ -6,6 +6,11 @@
 #show: codly-init.with()
 #import "../lib.typ": *
 
+#import "@preview/headcount:0.1.0": dependent-numbering, reset-counter
+
+#set figure(numbering: dependent-numbering("1.1"))
+#show heading: reset-counter(counter(figure.where(kind: image)))
+
 // apply numbering up to h3
 #show heading: it => {
   if (it.level > 3) {
@@ -25,7 +30,6 @@ Prima di introdurre i *column stores* è necessario fare una breve digressione d
 == Architettura di un R-DBMS
 
 Quello che vediamo in @fig:rdbms_internal è una rappresentazione dell'organizzazione interna delle componenti di un DBMS relazionale.
-#v(-2em)
 #figure(
   image("../images/rdbms_internal.png", width: 90%),
   caption: "Organizzazione interna delle componenti di un R-DBMS",
@@ -132,8 +136,6 @@ Esistono diversi modi di applicare compressione sui dati memorizzati in un colum
 ===== Run-Length Encoding (RLE)
 Si tratta di un algoritmo di compressione alla base del quale c'è il principio di contare quante volte consecutive un certo valore viene ripetuto. Dopo la compressione, ogni valore verrà rappresentato dalla tupla che segue: `(value, start row, run-length)`. @fig:rle_encoding mostra un esempio del funzionamento di questo algoritmo.
 
-#v(-2em)
-
 #figure(
   image("../images/rle.png", width: 50%),
   caption: "Esempio di Run-Length Encoding",
@@ -157,7 +159,6 @@ Chiaramente, l'utilizzo di questo approccio risulta più oneroso in termini di s
 ===== Dictionary Encoding
 In questo algoritmo di compressione, ogni valore viene rimpiazzato ogni valore con valori che siano rappresentabili in maniera più efficiente. Per esempio, effettuando le seguenti associazioni: #text(fill: orange)[1 #sym.arrow 205], #text(fill: red)[2 #sym.arrow 207] e #text(fill: rgb(0, 0, 255))[3 #sym.arrow 587] otteniamo la rappresentazione di @fig:dict_encoding.
 
-#v(-2em)
 #figure(
   image("../images/dict_encoding.png", width: 50%),
   caption: "Esempio di dictionary-encoding",
@@ -167,7 +168,6 @@ Questo approccio risulta particolarmente vantaggioso nel momento in cui i valori
 
 È anche possibile andare ad utilizzare questo approccio per *sequenze* di valori, andando a mappare intere sequenze a valori più compatti; questo approccio risulta di complicata implementazione ma può portare a tassi di compressione molto elevati. Per esempio effettuando il mapping #text(fill: rgb(0, 0, 255))[1 #sym.arrow 1002, 1010, 1004], #text(fill: green)[2 #sym.arrow 1008, 1006] otteniamo la rappresentazione di @fig:dict_seq_encoding
 
-#v(-2em)
 #figure(
   image("../images/seq_dict_encoding.png", width: 50%),
   caption: "Esempio di dictionary-encoding per sequenze",
@@ -179,7 +179,6 @@ In questo algoritmo di compressione, viene scelto un *valore di riferimento* (es
 
 È possibile scegliere che ci sia un valore massimo di offset dopo il quale i valori non vengano più compressi e marcati con un simbolo speciale. Questo potrebbe essere particolarmente utile per identificare e gestire i *valori anomali* (outliers). @fig:for_encoding mostra un esempio del funzionamento di questo algoritmo.
 
-#v(-2em)
 #figure(
   image("../images/for_encoding.png", width: 50%),
   caption: "Esempio di Frame-of-Reference encoding con valori oltre l'offset massimo",
@@ -187,10 +186,9 @@ In questo algoritmo di compressione, viene scelto un *valore di riferimento* (es
 
 Una variante di questa tecnica di encoding è data dal *differential encoding*, dove invece di memorizzare l'offset rispetto ad un valore predefinito, ogni valore viene memorizzato come differenza rispetto al valore precedente. Questo approccio potrebbe aiutare specialmente nella riduzione del numero di valori che sono fuori dall'offset massimo. @fig:differential_encoding mostra un esempio del funzionamento di questo algoritmo.
 
-#v(-2em)
 #figure(
   image("../images/differential_encoding.png", width: 50%),
-  caption: "Esempio di Differential encoding con valori oltre l'offset massimo",
+  caption: "Esempio di encoding differenziale con valori oltre l'offset massimo",
 )<fig:differential_encoding>
 
 #remark[Si noti come in @fig:differential_encoding il valore successivo al valore fuori dall'offset sia preso a partire dal primo valore 'valido'. Questo potrebbe tornare particolarmente utile per trovare outlier.]
@@ -230,3 +228,10 @@ In questa sezione andiamo a concentrarci su quale approccio sia necessario per e
 ])
 
 #remark[Si noti come nell'esempio in precedenza, se non avessimo avuto a disposizione i run-length, avremmo dovuto de-comprimere l'intera colonna e poi effettuare il conteggio per ogni `ReaderID`, il che sarebbe stato molto più costoso in termini di tempo di calcolo. Questo ci suggerisce come sia importante scegliere algoritmi di compressione adeguati al tipo di query che ci aspettiamo di dover eseguire sui dati.]
+
+=== Alcuni Prodotti Commerciali
+Di seguito sono elencati alcuni dei più noti prodotti commerciali che implementano uno storage engine colonnare:
+
+- *Monet DB*: si tratta del primo database basato su storage engine colonnare, supporta il modello relazionale.
+- *Maria DB ColumnStore*: si tratta di un'estensione di MariaDB che implementa uno storage engine colonnare, supporta il modello relazionale.
+- *Apache Parquet*: si tratta di un formato di file che implementa uno storage engine colonnare, utilizzato principalmente in ambito big data.
