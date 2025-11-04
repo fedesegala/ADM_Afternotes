@@ -120,9 +120,63 @@ Ogni *data block* è sostanzialmente composto da una lista di *key-value* pairs.
 
 === Ulteriori Accorgimenti
 ==== Write-Ahead Logging
-Il sistema progettato fino a questo momento è estremamente vulnerabile nel caso di *crash improvvisi*: tutto ciò che è presente in memtable non sarebbe infatti recuperabile. Per garnatire che i dati non vadano persi in questi casi, viene utilizzata una tecnica chiamata *write-ahead logging*. Sostanzialmente ogni operazione di scrittura viene effettuata due volte: una volta su un *file di log* memorizzato su disco, e una seconda volta nella *memtable*. In questo modo, in caso di crash, è possibile recuperare tutte le operazioni di scrittura effettuate leggendo il file di log e reinserendole nella memtable. @fig:ers_writelog mostra questo processo.
+Il sistema progettato fino a questo momento è estremamente vulnerabile nel caso di *crash improvvisi*: tutto ciò che è presente in memtable non sarebbe infatti recuperabile. Per garnatire che i dati non vadano persi in questi casi, viene utilizzata una tecnica chiamata *write-ahead logging*. Sostanzialmente ogni operazione di scrittura viene effettuata due volte: una volta su un *file di log* memorizzato su disco, e una seconda volta nella *memtable*.
 
 #figure(
   image("../images/ers_write_log.png", width: 90%),
   caption: [Write-Ahead Logging in un Extensible Record Store],
 )<fig:ers_writelog>
+
+Utilizzando questo approccio, in caso di system crash, è possibile recuperare tutte le operazioni di scrittura effettuate leggendo il file di log e reinserendole nella memtable. @fig:ers_writelog mostra questo processo. In pratica, il *redo log* viene svuotato ogni qualvolta che avviene un'operazione di flushing della memtable su disco. Se al verificarsi di un crash di sistema il log contiene dei record, significa che è necessario ripristinare lo stato.
+
+==== Compattazione dei File
+Dopo che si sono verificate *molte operazioni di flushing*, si verranno a creare *molti file* ordinati su disco. Questo comporta che le _operazioni di lettura_ diventino _sempre più lente_. Questo perché per leggere un dato specifico, potrebbe essere necessario andare a leggere molti file diversi, andando così a vanificare il vantaggio di avere i dati ordinati all'interno di ogni singolo file.
+
+Per capire l'idea alla base di questo approccio, è necessario considerare i seguenti punti:
+
+- Nel momento in cui cerchiamo una chiave, dobbiamo cercarla all'interno di ogni file presente all'interno del disco
+- Il costo di ricerca della chiave all'interno di un file consiste nella ricerca del trailer (1 accesso a pagina), della ricerca dell'indice (1 accesso a pagina) e nel caso in cui la chiave sia presente nel file, il costo di ricerca all'interno del blocco dati (1 accesso a pagina), per un totale di massimo 3 pagine per file
+- Possiamo concludere che il costo della ricerca di una chiave sia dominato dal numero di file presenti su disco $O(n)$, dove $n$ è il numero di file (o di operazioni di flushing effettuate fino ad un certo punto)
+
+L'idea potrebbe essere quella di andare a *ridurre il numero di file*, per fare ciò, senza perdita di informazione, la soluzione consiste nel *combinare* più file all'interno di un unico file più grande. La creazione di file più grandi nativi non è supportata, dal momento che la dimensione di questi dipende dalla dimensione della _memtable_. Dal momento che effettuare ordinamento su disco è particolarmente costoso, questa operazione viene effettuata soltanto l'effort necessario è compensato dall'aumento di velocità in lettura.
+
+Durante l'operazione di *compaction* è possibile anche decidere di eliminare i record che sono stati marcati come cancellati tramite tombstone, così da liberare spazio su disco.
+#remark[Possiamo associare questa operazione di compattazione a quella di *deframmentazione di un disco* o a quella di *ricostruzione dell'indice* di una base di dati relazionale.]
+
+#remark[Dal momento che i file che stiamo riunendo in un unico file ordinato sono già rispettivamente ordinati, possiamo applicare un comunissimo algoritmo di ordinamento: il *merging*, che corrisponde alla seconda fase dell'algoritmo _merge-sort_.]
+
+@fig:ers_compaction mostra il flusso di operazioni che avvengono durante una compattazione di file in un extensible record store.
+
+#figure(
+  image("../images/ers_compaction.png", width: 90%),
+  caption: [Compattazione dei file in un Extensible Record Store],
+)<fig:ers_compaction>
+
+==== Bloom Filters
+Per migliorare ulteriormente le prestazioni in lettura, è possibile applicare una nuova tecnica chiamata *bloom filter*. Si tratta di un _meccanismo probabilistico_ utilizzato per determinare l'_appartenenza ad un insieme_. In questo specifico caso viene utilizzato per determinare se una *chiave* è presente o meno all'interno di un *file specifico* o direttamente in un *data block*.
+
+Questo filtro viene posizionato tra il trailer e l'indice all'interno del file contenente i vari data block e viene memorizzata la sua posizione all'interno del trailer in modo che sia di facile accesso. In @fig:ers_bloom_filter è mostrata la nuova struttura.
+
+#figure(
+  image("../images/ers_bloom.png", width: 90%),
+  caption: [Bloom Filter all'interno dei file in un Extensible Record Store],
+)<fig:ers_bloom_filter>
+
+Il workflow di lettura di un dato specifico con l'utilizzo del bloom filter è il seguente:
+- Viene _letto il trailer_ per recuperare la posizione dell'indice e del bloom filter
+- L'indice indica quali siano le chiavi minima e massima di ogni data block
+- Se esiste un range che può contenere la chiave cercata, si legge il data block, cercando la chiave al suo interno
+- Il bloom filter viene utilizzato per determinare se la chiave è presente o meno all'interno del blocco che contiene chiavi nel range prestabilito
+
+Ipotizziamo di avere un *oracolo* che ci dica se una chiave è presente o meno all'interno di un data block, possiamo avere i seguenti casi:
+
+- L'oracolo indica che la chiave esiste, ma non è vero, abbiamo un *true positive*, in questo caso andremmo a leggere il blocco dati e non troveremo la chiave cercata, andando a 'sprecare' computazione, ma è una situazione accettabile
+- L'oracolo indica che la chiave esiste, ed in effetti esiste, siamo nel caso di un *true positive*. In questo caso andremo a leggere il blocco dati e troveremo la chiave cercata
+- Il filtro indica che la chiave non esiste, ma in realtà esiste, siamo nel caso di un *false negative*. Se ci fidassimo dell'oracolo, non andremmo a leggere il blocco dati e perderemmo l'informazione, questa situazione è inaccettabile
+- Il filtro indica che la chiave non esiste, ed effettivamente non esiste, siamo nel caso di un *true negative*. In questo caso potremmo evitare di leggere il blocco dati, risparmiando tempo di computazione
+
+Alla luce delle considerazioni appena fatte, i bloom filters sono progettati in modo tale da _poter restituire dei falsi positivi_, che sono appunto tollerabili, ma in modo tale da _non restituire mai dei falsi negativi_, che sono non accettabili.
+
+L'idea dietro ad un bloom filter è quella di usare una piccola quantità di memoria per andare a tracciare appartenenza o non appartenenza ad un insieme. Quando andiamo a memorizzare un record, questo ha delle determinate caratteristiche, alcune di queste possono essere condivise da altri record. Alla luce di questo concetto, sappiamo che nel momento in cui cerchiamo un record, con delle date caratteristiche, se un certo insieme ha elementi con queste caratteristiche, potrebbe (*falsi positivi accettabili*) contenere record di interesse, al contrario sicuramente non conterrà il record cercato (*falsi negativi inaccettabili*).
+
+
