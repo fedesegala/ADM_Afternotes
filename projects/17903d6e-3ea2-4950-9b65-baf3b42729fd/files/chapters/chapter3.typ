@@ -6,11 +6,6 @@
 #show: codly-init.with()
 #import "../lib.typ": *
 
-#import "@preview/headcount:0.1.0": dependent-numbering, reset-counter
-
-#set figure(numbering: dependent-numbering("1.1"))
-#show heading: reset-counter(counter(figure.where(kind: image)))
-
 // apply numbering up to h3
 #show heading: it => {
   if (it.level > 3) {

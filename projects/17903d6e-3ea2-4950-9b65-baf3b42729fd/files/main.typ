@@ -10,13 +10,6 @@
   lang: "it",
 )
 
-// show chapter on figure numbering
-#set figure(numbering: (..num) => numbering("1.1", counter(heading).get().first(), num.pos().first()))
-
-// show chapter on equation numbering
-#set math.equation(numbering: (..num) => numbering("(1.1)", counter(heading).get().first(), num.pos().first()))
-
-
 #show: ilm.with(
   title: [Advanced Data Management],
   author: "Federico Segala",

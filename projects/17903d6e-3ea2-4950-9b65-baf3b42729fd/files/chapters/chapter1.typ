@@ -2,15 +2,11 @@
 #import cosmos.fancy: *
 #import "@preview/cetz:0.4.2": canvas, draw, tree
 #import "../lib.typ": *
-#import "@preview/headcount:0.1.0": dependent-numbering, reset-counter
 
 // #import cosmos.rainbow: *
 // #import cosmos.clouds: *
 #show: show-theorion
 
-
-#set figure(numbering: dependent-numbering("1.1"))
-#show heading: reset-counter(counter(figure.where(kind: image)))
 
 // apply numbering up to h3
 #show heading: it => {
