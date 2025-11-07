@@ -179,4 +179,46 @@ Alla luce delle considerazioni appena fatte, i bloom filters sono progettati in 
 
 L'idea dietro ad un bloom filter è quella di usare una piccola quantità di memoria per andare a tracciare appartenenza o non appartenenza ad un insieme. Quando andiamo a memorizzare un record, questo ha delle determinate caratteristiche, alcune di queste possono essere condivise da altri record. Alla luce di questo concetto, sappiamo che nel momento in cui cerchiamo un record, con delle date caratteristiche, se un certo insieme ha elementi con queste caratteristiche, potrebbe (*falsi positivi accettabili*) contenere record di interesse, al contrario sicuramente non conterrà il record cercato (*falsi negativi inaccettabili*).
 
+#example-box("Applicazione di Bloom Filtering ad un semplice contesto", [
+  Supponiamo di essere in una classe, e voler cercare di stimare se un generico studente è presente al suo interno. Possiamo considerare un array di 26 elementi (uno per lettera dell'alfabeto), quando una persona entra in classe andiamo a memorizzare che uno studente con una certa iniziale è entrato in aula.
 
+  Supponiamo che entrino in aula gli studenti 'Bob', e 'Alice', andremo a settare gli elementi corrispondenti alle lettere 'A' e 'B' nell'array. Ora, se vogliamo sapere se 'Charlie' è presente in aula, andremo a controllare l'elemento corrispondente alla lettera 'C'. Dal momento che questo elemento non è settato, possiamo concludere che 'Charlie' non è presente in aula (true negative).
+])
+
+#remark[Possiamo notare come la scelta delle caratteristiche da utilizzare nel bloom filter sia fondamentale per garantire che il filtro non produca troppi falsi positivi.
+  Nel caso di sopra, stiamo inoltre introducendo un *bias*, dal momento che ci sono iniziali che sono molto più comuni di altre.]
+
+Alla luce dell'osservazione precedente, desidereremmo che la distribuzione delle caratteristiche fosse il più *uniforme* possibile. Per fare ciò i bloom filter utilizzano *funzioni di hashing* per andare a mappare i valori delle caratteristiche in indici di un array di bit. In questo modo, anche se le caratteristiche non sono uniformemente distribuite, gli indici generati dalle funzioni di hashing lo saranno.
+Il filtro che progetteremo avrà lo scopo di decidere se un certo valore *non è presente* in un insieme.
+
+Di seguito andiamo ad elencare i passi per la ricerca di un valore all'interno di un bloom filter:
+
+- Viene richiesto al bloom filter se un certo valore $c$ è presente nell'insieme $S$
+- Vengono utilizzate $k$ funzioni di hashing $h_1, ..., h_k$
+- Ogni funzione di hashing $h_i$ mappa il valori $c$ in maniera casuale in un indice dell'array di bit di dimensione $m$: $h_i: c #sym.arrow [0, m-1]$, ossia $h_i(c) #sym.in {1, ..., m}$
+
+Nel caso in cui due diversi valori $c, c'$ vengano mappati nello stesso valore: ($h_i(c) = h_i(c')$), si parla di *collisione*. Chiaramente le collisioni sono la causa principale dei falsi positivi.
+
+Di andiamo ad approssimare il numero di falsi positivi che possiamo aspettarci da un bloom filter. Supponiamo di avere a disposizione $k$ _funzioni di hashing_, un array di bit di dimensione $m$ e di voler memorizzare $n$ elementi nel filtro. Il numero di falsi positivi si può approssimare tramite la formula in @eq:bloom_fp.
+
+#align(center)[
+  $
+    "Pr[false positive]" = (1 - (1 - 1/m)^(k n))^k #sym.approx (1 - e^(-(k n) / m))^k
+  $<eq:bloom_fp>
+]
+
+@fig:ers_bloom_read, mostra come si comporta un bloom filter nel caso in cui sia necessario leggere dei dati, sia nel caso di chiave presente sia nel caso di chiave assente.
+
+#figure(
+  image("../images/ers_bloom_read.png", width: 80%),
+  caption: [Due esempi di utilizzo di un Bloom Filter durante la lettura in un Extensible Record Store, `query1` mostra il caso in cui la chiave cercata è presente, `query2` mostra il caso in cui la chiave cercata non è presente],
+)<fig:ers_bloom_read>
+
+== Alcune Implementazioni
+Tra le implementazioni più famose di extensible record store troviamo:
+- Apache Cassandra, che utilizza CQL, un linguaggio *SQL-like*, nel quale un inserimento avviene nel modo seguente:
+  ```CQL
+  INSERT INTO bookinfo (book_id, title, author)
+  VALUES (1234, 'Foo', 'Bar', '
+  ```
+- HBase, che è costruito sopra a Hadoop HDFS e utilizza il framework MapReduce per l'elaborazione distribuita dei dati
