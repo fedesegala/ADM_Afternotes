@@ -390,4 +390,323 @@ Vorremo andare a trovare i ristoranti che sono graditi dagli amici di 'Philip' c
 ]
 
 === Introduzione a Cypher
-Dopo aver visto qualche esempio di query eseguita in Cypher andiamo a vedere più nel dettaglio la *sintassi* e gli *elementi fondamentali* di questo linguaggio.
+Dopo aver visto qualche esempio di query eseguita in Cypher andiamo a vedere più nel dettaglio la *sintassi* e gli *elementi fondamentali* per costruire query con questo linguaggio.
+
+==== Sintassi
+
+- un *nodo* viene rappresentato tramite delle parentesi tonde `()`, al cui interno possiamo specificare una *label* e delle *proprietà*. Esempio: `(n:Person {name: "Alice", age: 30})`
+- una *relazione* viene rappresentata tramite una freccia `-->` o `<--`, al cui interno possiamo specificare una *label* e delle *proprietà* tra parentesi quadre `[]`. Esempio: `-[:KNOWS {since: 2020}]->`
+- un *pattern* viene di solito costruito tramite una combinazione di nodi e relazioni: `()-[]-()`, `()-[]->()`, `()<-[]-()`.
+
+
+===== Componenti di una Query
+I due componenti principali di una query in Cypher sono sostanzialmente due:
+
+- *`MATCH`* : viene utilizzato per specificare i pattern da cercare all'interno del grafo.
+- *`RETURN`* : viene utilizzato per specificare quali dati che hanno registrato una corrispondenza nella clausola `MATCH` vogliamo vengano restituiti dalla query
+
+
+#example-box("Basica Query in Cypher 2", [
+  #align(center)[
+    #block(width: 75%)[
+      ```Cypher
+      MATCH (m:Movie) // considera tutti i nodi m di tipo Movie
+      RETURN m        // restituisce tutti i nodi m trovati
+      ```
+    ]]
+])
+
+#example-box("Basica Query in Cypher 2", [
+  #align(center)[
+    #block(width: 75%)[
+      ```Cypher
+      MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)
+      RETURN p, r, m
+      ```
+    ]]
+
+  In questo caso `MATCH` e `RETURN` sono due parole chiave del linguaggio; `p`, `r` e `m` sono delle *variabili* che rappresentano rispettivamente i nodi di tipo `Person`, le relazioni di tipo `ACTED_IN` e i nodi di tipo `Movie`.
+])
+
+È anche possibile utilizzare interi pattern come variabili, per esempio nel caso in cui vogliamo vedere dei *path* completi. Lo vediamo nell'esempio che segue.
+
+#example-box("Query di Path in Cypher", [
+  #align(center)[
+    #block(width: 75%)[
+      ```Cypher
+      MATCH p = (p:Person)-[r:ACTED_IN]->(m:Movie)
+      RETURN p
+      ```
+    ]]
+
+  In questo caso la *variabile* `p` rappresenta l'intero path che va dal nodo di tipo `Person`, tramite la relazione di tipo `ACTED_IN`, fino al nodo di tipo `Movie`.
+])
+
+È anche possibile andare ad accedere in maniera selettiva alle *proprietà* dei nodi e delle relazioni. Per fare ciò la sintassi è `{variable}.{property_key}`. Lo vediamo nell'esempio che segue.
+
+#example-box("Query con Proprietà in Cypher", [
+  #align(center)[
+    #block(width: 75%)[
+      ```Cypher
+      MATCH (p:Person)-[r:ACTED_IN]->(m:Movie)
+      RETURN p.name, m.title
+      ```
+    ]]
+
+  In questo caso stiamo restituendo solamente le proprietà `name` del nodo di tipo `Person` e `title` del nodo di tipo `Movie`.
+])
+
+#remark[Si noti che questa operazione è molto simile a quella di eseguire una *proiezione* in algebra relazionale o ad applicare costrutti equivalenti in SQL. ]
+
+Un'altra questione che seppur di minore importanza è necessario menzionare è il funzionamento e la gestione del *casing* in questo linguaggio:
+
+- le _label_ di nodi, i _tipi_ delle relazione, le _property key_ sono sempre *case sensitive*
+- tutte le _keyword di Cypher_ sono *case insensitive*
+
+=== Indici e vincoli
+Un costrutto molto importante è quello dei *vincoli* (constraints), che permettono di imporre delle regole sui dati memorizzati all'interno del grafo, in modo da garantire l'integrità, coerenza dei dati e altre interessanti proprietà.
+
+All'interno di Neo4j e in Cypher è inoltre possibile andare a specificare delle maniere per *ottimizzare* le performance di alcune operazioni, lo strumento utilizzato, similmente a quanto avviene con altre tecnologia è quello degli *indici*.
+
+==== Vincoli (Constraints) Unique
+Andiamo a vedere ora il principale vincolo che possiamo andare a specificare in Neo4j, ovvero il vincolo di *unicità*. Questo assolve a due funzioni fondamentali:
+
+- Garantisce che non esistano due nodi con la stessa proprietà chiave-valore per una certa label
+- Permette un *accesso molto veloce* a nodi che corrispondono certe coppie "label-property"
+
+Per la creazione di questo vincolo andiamo a utilizzare la seguente sintassi:
+
+#align(center)[
+  #block(width: 75%)[
+    ```Cypher
+    CREATE CONSTRAINT ON (label:Label)
+    ASSERT label.property_key IS UNIQUE
+    ```
+  ]
+]
+
+Esistono in verità *tre tipologie* di vincoli di unicità che andiamo di seguito ad illustrare:
+
+- *Unique Node Property*: garantisce che non esistano due nodi con la stessa proprietà chiave-valore per una certa label.
+  #align(center)[
+    #block(width: 75%)[
+      ```Cypher
+      CREATE CONSTRAINT ON (label:Label)
+      ASSERT label.property_key IS UNIQUE
+      ```
+    ]
+  ]
+- *Node Property Existence*: impedisce la creazione di nodi che per una certa label non abbiano valori
+  #align(center)[
+    #block(width: 75%)[
+      ```Cypher
+      CREATE CONSTRAINT ON (label:Label)
+      ASSERT exists(label.name)
+      ```
+    ]
+  ]
+- *Relationship Property Existence*: impone che per un certo tipo di relazione esista sempre una certa proprietà
+  #align(center)[
+    #block(width: 85%)[
+      ```Cypher
+      CREATE CONSTRAINT ON ()-[rel:REL_TYPE]->()
+      ASSERT exists(rel.name)
+      ```
+    ]
+  ]
+
+==== Indici
+Come già visto in altri sistemi e linguaggi, l'utilizzo di *indici* serve a garantire un *lookup* veloce di nodi che soddisfano una certa condizione di tipo "label-property". In Neo4j possiamo creare un indice tramite la
+sintassi che segue:
+
+#align(center)[
+  #block(width: 75%)[
+    ```Cypher
+    CREATE INDEX ON :Label(property_key)
+    ```
+  ]
+]
+
+Il lookup efficiente e rapido è garantito quando andiamo ad utilizzare i seguenti *predicati* che utilizzano gli indici by design:
+
+- _Uguaglianza_: `=`, `<>`
+- `STARTS WITH`
+- `CONTAINS`
+- `ENDS WITH`
+- Ricerche su *range* di valori
+- Ricerche su *valori null*
+
+
+È importante fare una distinzione tra l'utilizzo di indici in questo contesto e in altri sistemi come quello relazionale: se nel mondo relazionale, l'uso dell'indice è fatto per *cercare righe* di certe tabelle, in un graph db l'indice serve a *cercare nodi* di partenza per una certa query.
+
+=== Scrittura di Query in Cypher: Utilizzi Avanzati
+Dopo aver visto le basi del linguaggio Cypher andiamo ora a vedere qualche costrutto più avanzato che ci consentirà di scrivere query più complesse e potenti.
+
+==== Clausola `CREATE`
+La clausola `CREATE` viene utilizzata per andare a creare nuovi nodi e relazioni all'interno del grafo. La sintassi è molto simile a quella utilizzata per specificare i pattern nella clausola `MATCH`:
+
+#align(center)[
+  #block(width: 85%)[
+    ```Cypher
+    CREATE (m:Movie(title: 'Mystic River', released:2003))
+    RETURN m
+    ```
+  ]
+]
+
+Nell'esempio di sopra stiamo andando a creare un'entità `Movie` con le proprietà `title` e `released` e ritorniamo all'utente l'entità appena creata.
+
+È possibile andare a utilizzare la clausola `CREATE` anche per creare relazioni tra nodi esistenti:
+
+#align(center)[
+  #block(width: 85%)[
+    ```Cypher
+    MATCH (m:Movie {title: 'Mystic River'})
+    MATCH (p:Person {name: 'Kevin Bacon'})
+    CREATE (p)-[r:ACTED_IN {roles: ['Sean']}]->(m)
+    RETURN p, r, m
+    ```
+  ]
+]
+
+In questo caso vediamo come sia stato prima effettuato il *lookup* dei nodi di interesse tramite la clausola `MATCH`, per poi andare a creare la relazione `ACTED_IN` tra i due nodi, con una proprietà `roles` che è una lista che conterrà i ruoli interpretati dall'attore nel film.
+
+#remark[
+  Una volta che andiamo ad utilizzare la clausola `CREATE` questa provvederà a creare tutto ciò che viene specificato al suo interno. Nel caso in cui vogliamo creare una relazione tra due nodi abbiamo due possibilità diverse:
+
+  - _entrambi i nodi sono già esistenti_: in tal caso andremo soltanto a creare la relazione
+  - _solo uno dei nodi o nessuno esiste_: ipotizzando che la persona con nome `Kevin Bacon` non fosse già esistente, la clausola `CREATE` la avrebbe creata per fare in modo che il path desiderato fosse coerente
+]
+
+==== Clausola `SET`
+Oltre a creare entità, è possibile anche andare a modificare le proprietà delle entità, per questo scopo utilizziamo la clausola `SET`:
+
+#align(center)[
+  #block(width: 85%)[
+    ```Cypher
+    MATCH (m:Movie {title: 'Mystic River'})
+    SET m.released = 2004
+    SET m.tagline = 'A movie about life and loss'
+    RETURN m
+    ```
+  ]
+]
+
+La query presentata sopra va sia a modificare una proprietà già esistente (`released`), sia ad aggiungerne una nuova (`tagline`).
+
+==== Clausola `MERGE`
+La clausola `MERGE` viene utilizzata per creare nodi o relazioni in modalità '*upsert*', combinando le funzionalità di `MATCH` e `CREATE`. In pratica, `MERGE` cerca di trovare un nodo o una relazione che corrisponde al pattern specificato; se non lo trova, lo crea.
+
+#align(center)[
+  #block(width: 85%)[
+    ```Cypher
+    MERGE (p:Person {name: 'Tom Hanks'})
+    RETURN p
+    ```
+  ]
+]
+
+#warning-box[
+
+  È importante considerare che l'utilizzo di questa clausola potrebbe portare a risultati inattesi se utilizzata senza la dovuta attenzione.
+  Supponiamo di voler andare a rivisitare la l'operazione di upsert presentata sopra, ma questa volta aggiungendo il la proprietà `oscar` alla persona `Tom Hanks`. A una prima occhiata potrebbe venirci in mente di utilizzare la seguente query:
+
+  #align(center)[
+    #block(width: 85%)[
+      ```Cypher
+      MERGE (p:Person {name: 'Tom Hanks', oscar: true})
+      RETURN p
+      ```
+    ]
+  ]
+
+  Tuttavia, questa query non funzionerà come ci aspettiamo. Se esiste già un nodo `Person` con il nome 'Tom Hanks' ma senza la proprietà `oscar`, la clausola `MERGE` non lo troverà come corrispondente e creerà un nuovo nodo con la proprietà `oscar` impostata a `true`. Di conseguenza, ci ritroveremo con due nodi distinti per 'Tom Hanks', uno con la proprietà `oscar` e uno senza. La query giusta da utilizzare in questo caso è la seguente:
+
+  #align(center)[
+    #block(width: 85%)[
+      ```Cypher
+      MERGE (p:Person {name: 'Tom Hanks'})
+      SET p.oscar = true
+      RETURN p
+      ```
+    ]
+  ]
+]
+
+È possibile utilizzare la clausola `MERGE` anche per creare relazioni in modalità upsert. Oltre a tutte queste funzionalità, `MERGE` supporta la possibilità di specificare delle *azioni* da eseguire in base al fatto che l'entità sia stata trovata o creata, tramite l'uso delle clausole `ON MATCH` e `ON CREATE`.
+
+#align(center)[
+  #block(
+    ```Cypher
+    MERGE (p:Person {name: 'Your Name'})
+    ON CREATE SET p.created = timestamp(), p.updated = 0
+    ON MERGE SET p.updated = p.updated + 1
+    RETURN p.created, p.updated
+    ```,
+  )
+]
+
+
+=== Data Ingestion in Neo4j
+Dopo aver visto come interrogare la nostra base di dati, andiamo a vedere come effettuare una delle operazioni più importanti nel mondo del data management, ovvero l'*ingestione* dei dati all'interno del database.
+
+Cypher è dotato di una clausola specifica per questo scopo, che permette di partire da un file `.csv`, si chiama appunto *`LOAD_CSV`*. Di seguito ne mostriamo alcune caratteristiche:
+
+- Permette di caricare dati in formato `.csv` da un file locale o da un URL
+- Preso in input un file `.csv` fornisce uno *stream* di record che possono essere processati tramite le classiche clausole messe a disposizione da Cypher (`MATCH`, `CREATE`, `SET`, ecc.)
+- Supporta l'esecuzione di *operazioni transazionali* sul grafo esistente
+- È in grado di convertire i valori letti dal file `.csv` in tipi di dati nativi di Neo4j (es. stringhe, numeri, booleani, ecc.)
+
+Ipotizziamo che il nostro property graph model sia descritto in @fig:05_ingestion_propgraph.
+
+#figure(
+  image("../images/05_ingestion_propgraph.png", width: 75%),
+  caption: "TODO: rifare in excalidraw ... Esempio di property graph model che rappresenta persone, film e le relazioni tra essi.",
+)<fig:05_ingestion_propgraph>
+
+Per ogni record del file `.csv` da utilizzare per l'ingestion vogliamo distinguere i casi seguenti:
+
+- Creiamo un nodo di tipo `Person` o `Movie` se questo non esiste già:
+  #align(center)[
+    #block(width: 90%)[
+      ```Cypher
+      CREATE (:Person {
+        name:row.name,
+        born:toInt(row.born)
+      });
+      ```
+    ]
+  ]
+- Cerchiamo nodo di inizio e nodo di fine e creiamo tr loro una relazione:
+  #align(center)[
+    #block(width: 90%)[
+      ```Cypher
+      MATCH (m:Movie {title:row.movie}),
+            (p:Person {name: row.person}),
+      CREATE (p)-[:ACTED_IN {roles:split(r.roles)}]->(m);
+      ```
+    ]
+  ]
+
+Una volta definiti i classici statements da utilizzare per fare ingestion, è necessario andare a mostrare in quale maniera dire a Neo4j di effettuare ingestion:
+
+#align(center)[
+  #block(width: 90%)[
+    ```Cypher
+    [USING PERIODIC COMMIT]   // attiva le transazioni per batch
+
+    LOAD CSV    // statement per iniziare a effettuare ingestion
+
+    WITH HEADERS  // opzionalmente usare la prima riga del file come chiave per gli elementi letti
+
+    FROM "url"    // path o url da cui leggere il file csv
+
+    AS row        // ritorna ogni riga come lista di stringe o mappa
+
+    FILEDTERMINATOR ";"   // specifica qual è il separatore dei valori
+
+
+    ... gli altri statement che specificano come fare ingestion ...
+    ```
+  ]
+]
