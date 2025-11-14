@@ -26,7 +26,7 @@ Prima di introdurre i *column stores* è necessario fare una breve digressione d
 
 Quello che vediamo in @fig:rdbms_internal è una rappresentazione dell'organizzazione interna delle componenti di un DBMS relazionale.
 #figure(
-  image("../images/rdbms_internal.png", width: 90%),
+  image("../images/ch03/rdbms_internal.png", width: 90%),
   caption: "Organizzazione interna delle componenti di un R-DBMS",
 )<fig:rdbms_internal>
 
@@ -132,7 +132,7 @@ Esistono diversi modi di applicare compressione sui dati memorizzati in un colum
 Si tratta di un algoritmo di compressione alla base del quale c'è il principio di contare quante volte consecutive un certo valore viene ripetuto. Dopo la compressione, ogni valore verrà rappresentato dalla tupla che segue: `(value, start row, run-length)`. @fig:rle_encoding mostra un esempio del funzionamento di questo algoritmo.
 
 #figure(
-  image("../images/rle.png", width: 50%),
+  image("../images/ch03/rle.png", width: 50%),
   caption: "Esempio di Run-Length Encoding",
 )<fig:rle_encoding>
 
@@ -145,7 +145,7 @@ Il grande vantaggio dell'utilizzo di questo approccio consiste nel forte tasso d
 In questo algoritmo di compressione, per ogni valore tra quelli presenti nella colonna viene creato un vettore con un bit per ogni riga. Se il valore è presente allora il bit viene settato a 1, altrimenti a 0. @fig:bve mostra un esempio del funzionamento di questo algoritmo.
 
 #figure(
-  image("../images/bve.png", width: 50%),
+  image("../images/ch03/bve.png", width: 50%),
   caption: "Esempio di Bit-vector encoding",
 )<fig:bve>
 
@@ -155,7 +155,7 @@ Chiaramente, l'utilizzo di questo approccio risulta più oneroso in termini di s
 In questo algoritmo di compressione, ogni valore viene rimpiazzato ogni valore con valori che siano rappresentabili in maniera più efficiente. Per esempio, effettuando le seguenti associazioni: #text(fill: orange)[1 #sym.arrow 205], #text(fill: red)[2 #sym.arrow 207] e #text(fill: rgb(0, 0, 255))[3 #sym.arrow 587] otteniamo la rappresentazione di @fig:dict_encoding.
 
 #figure(
-  image("../images/dict_encoding.png", width: 50%),
+  image("../images/ch03/dict_encoding.png", width: 50%),
   caption: "Esempio di dictionary-encoding",
 )<fig:dict_encoding>
 
@@ -164,7 +164,7 @@ Questo approccio risulta particolarmente vantaggioso nel momento in cui i valori
 È anche possibile andare ad utilizzare questo approccio per *sequenze* di valori, andando a mappare intere sequenze a valori più compatti; questo approccio risulta di complicata implementazione ma può portare a tassi di compressione molto elevati. Per esempio effettuando il mapping #text(fill: rgb(0, 0, 255))[1 #sym.arrow 1002, 1010, 1004], #text(fill: green)[2 #sym.arrow 1008, 1006] otteniamo la rappresentazione di @fig:dict_seq_encoding
 
 #figure(
-  image("../images/seq_dict_encoding.png", width: 50%),
+  image("../images/ch03/seq_dict_encoding.png", width: 50%),
   caption: "Esempio di dictionary-encoding per sequenze",
 )<fig:dict_seq_encoding>
 
@@ -175,14 +175,14 @@ In questo algoritmo di compressione, viene scelto un *valore di riferimento* (es
 È possibile scegliere che ci sia un valore massimo di offset dopo il quale i valori non vengano più compressi e marcati con un simbolo speciale. Questo potrebbe essere particolarmente utile per identificare e gestire i *valori anomali* (outliers). @fig:for_encoding mostra un esempio del funzionamento di questo algoritmo.
 
 #figure(
-  image("../images/for_encoding.png", width: 50%),
+  image("../images/ch03/for_encoding.png", width: 50%),
   caption: "Esempio di Frame-of-Reference encoding con valori oltre l'offset massimo",
 )<fig:for_encoding>
 
 Una variante di questa tecnica di encoding è data dal *differential encoding*, dove invece di memorizzare l'offset rispetto ad un valore predefinito, ogni valore viene memorizzato come differenza rispetto al valore precedente. Questo approccio potrebbe aiutare specialmente nella riduzione del numero di valori che sono fuori dall'offset massimo. @fig:differential_encoding mostra un esempio del funzionamento di questo algoritmo.
 
 #figure(
-  image("../images/differential_encoding.png", width: 50%),
+  image("../images/ch03/differential_encoding.png", width: 50%),
   caption: "Esempio di encoding differenziale con valori oltre l'offset massimo",
 )<fig:differential_encoding>
 

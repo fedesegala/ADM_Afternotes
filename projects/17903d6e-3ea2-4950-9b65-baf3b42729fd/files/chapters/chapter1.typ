@@ -55,7 +55,7 @@ Tipicamente è complicato che una base di dati supporti tutte le caratteristiche
 == Componenti di un Database
 Il componente software che si fa carico di tutte le operazioni sulla base di dati è il *database management system* (DBMS). #ref(<fig:dbms_interactions>) illustra come molti altri componenti nel sistema operativo vadano a interagire tra di loro e con questo importante elemento.
 #figure(
-  image("../images/dbms_interactions.png"),
+  image("../images/ch01/dbms_interactions.png"),
   caption: [Interazioni del DBMS],
 )<fig:dbms_interactions>
 
@@ -221,7 +221,7 @@ Una volta presi in esame la situazione da rappresentare e i requisiti da questa 
 
 - definizione di un *modello concettuale*: serve a modellare ad alto livello la situazione presa in esame; tipicamente vengono impiegati i diagrammi entità-relazione.
   #figure(
-    image("../images/dbms_interactions.png"),
+    image("../images/ch01/dbms_interactions.png"),
     caption: [Diagramma Entità-Relazione di una libreria],
   )
 

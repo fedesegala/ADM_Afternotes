@@ -30,7 +30,7 @@ In questa sezione andremo a vedere come è possibile modellare i dati in un sist
 - Ogni riga di una column family può avere un insieme di colonne diverso dalle altre righe della stessa column family
 
 #figure(
-  image("../images/extensible_record_stores_terminology.png"),
+  image("../images/ch04/extensible_record_stores_terminology.png"),
   caption: [Terminologia degli Extensible Record Stores],
 )<fig:ers_terminology>
 
@@ -69,7 +69,7 @@ Per mitigare il costo in lettura, viene scelto di effettuare un'operazione di *o
 In @fig:ers_write_flow è mostrato il flusso delle operazioni di scrittura in un extensible record store.
 
 #figure(
-  image("../images/ers_write.png", width: 90%),
+  image("../images/ch04/ers_write.png", width: 90%),
   caption: [Flusso delle operazioni di scrittura in un Extensible Record Store],
 )<fig:ers_write_flow>
 
@@ -98,7 +98,7 @@ Come già anticipato, le operazioni di lettura in un sistema di questo genere so
 In particolare, per leggere un dato specifico si rende necessario *combinare* i dati che provengono sia dalla memtable (dati più recenti) sia dai file memorizzati su disco. La versione corretta dei dati da recuperare è quella più recente, informazione che sarà accessibile tramite timestamp. @fig:ers_read_flow mostra chiaramente questo processo.
 
 #figure(
-  image("../images/ers_read.png", width: 95%),
+  image("../images/ch04/ers_read.png", width: 95%),
   caption: [Flusso delle operazioni di lettura in un Extensible Record Store],
 )<fig:ers_read_flow>
 
@@ -114,7 +114,7 @@ Andiamo ora a concentrare l'attenzione su come i dati vengono rappresentati all'
 Ogni *data block* è sostanzialmente composto da una lista di *key-value* pairs. Ogni key è la full key del record (row key + column family + column qualifier + timestamp) e il value è il valore associato a quella specifica chiave. Andando più nel dettaglio, queste key-value pairs sono memorizzate assieme ad un campo *type* che ci serve a distinguere se il record è un record normale _inserimento_, una _modifica_ o una _cancellazione_ (tombstone). @fig:ers_file_format mostra la gerarchia appena descritta.
 
 #figure(
-  image("../images/ers_fileformat.png", width: 90%),
+  image("../images/ch04/ers_fileformat.png", width: 90%),
   caption: [Formato di un file in un Extensible Record Store],
 )<fig:ers_file_format>
 
@@ -123,7 +123,7 @@ Ogni *data block* è sostanzialmente composto da una lista di *key-value* pairs.
 Il sistema progettato fino a questo momento è estremamente vulnerabile nel caso di *crash improvvisi*: tutto ciò che è presente in memtable non sarebbe infatti recuperabile. Per garnatire che i dati non vadano persi in questi casi, viene utilizzata una tecnica chiamata *write-ahead logging*. Sostanzialmente ogni operazione di scrittura viene effettuata due volte: una volta su un *file di log* memorizzato su disco, e una seconda volta nella *memtable*.
 
 #figure(
-  image("../images/ers_write_log.png", width: 90%),
+  image("../images/ch04/ers_write_log.png", width: 90%),
   caption: [Write-Ahead Logging in un Extensible Record Store],
 )<fig:ers_writelog>
 
@@ -148,7 +148,7 @@ Durante l'operazione di *compaction* è possibile anche decidere di eliminare i 
 @fig:ers_compaction mostra il flusso di operazioni che avvengono durante una compattazione di file in un extensible record store.
 
 #figure(
-  image("../images/ers_compaction.png", width: 90%),
+  image("../images/ch04/ers_compaction.png", width: 90%),
   caption: [Compattazione dei file in un Extensible Record Store],
 )<fig:ers_compaction>
 
@@ -158,7 +158,7 @@ Per migliorare ulteriormente le prestazioni in lettura, è possibile applicare u
 Questo filtro viene posizionato tra il trailer e l'indice all'interno del file contenente i vari data block e viene memorizzata la sua posizione all'interno del trailer in modo che sia di facile accesso. In @fig:ers_bloom_filter è mostrata la nuova struttura.
 
 #figure(
-  image("../images/ers_bloom.png", width: 90%),
+  image("../images/ch04/ers_bloom.png", width: 90%),
   caption: [Bloom Filter all'interno dei file in un Extensible Record Store],
 )<fig:ers_bloom_filter>
 
@@ -210,7 +210,7 @@ Di andiamo ad approssimare il numero di falsi positivi che possiamo aspettarci d
 @fig:ers_bloom_read, mostra come si comporta un bloom filter nel caso in cui sia necessario leggere dei dati, sia nel caso di chiave presente sia nel caso di chiave assente.
 
 #figure(
-  image("../images/ers_bloom_read.png", width: 80%),
+  image("../images/ch04/ers_bloom_read.png", width: 80%),
   caption: [Due esempi di utilizzo di un Bloom Filter durante la lettura in un Extensible Record Store, `query1` mostra il caso in cui la chiave cercata è presente, `query2` mostra il caso in cui la chiave cercata non è presente],
 )<fig:ers_bloom_read>
 

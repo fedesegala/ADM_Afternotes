@@ -33,14 +33,14 @@ In questa sezione andiamo a porre le basi teoriche per comprendere il concetto a
 Un grafo è detto diretto se tutti i suoi archi hanno una direzione associata, al contrario, se nessun arco ha direzione, il grafo si dice indiretto. @fig:05_indirected_vs_directed mostra un esempio di grafo diretto e indiretto.
 
 #figure(
-  image("../images/05_indirected_vs_directed.png", width: 75%),
+  image("../images/ch05/05_indirected_vs_directed.png", width: 75%),
   caption: "Esempio di grafo diretto (a sinistra) e indiretto (a destra).",
 )<fig:05_indirected_vs_directed>
 
 Un grafo si dice un *multigrafo* se ha una coppia di nodi che è connessa tramite più di un arco. Questa caratteristica è utile per rappresentare relazioni complesse tra entità, come ad esempio in una rete di trasporti dove più linee possono collegare due stazioni. @fig:05_multigraph mostra un esempio di multigrafo.
 
 #figure(
-  image("../images/05_multigraph.png", width: 35%),
+  image("../images/ch05/05_multigraph.png", width: 35%),
   caption: [Esempio di multigrafo con più archi tra alcuni nodi. $e_3, e_4$ sono archi multipli tra i nodi $v_2$ e $v_3$.],
 )<fig:05_multigraph>
 
@@ -67,7 +67,7 @@ Un *path* (o percorso) in un grafo è una sequenza di vertici e archi che colleg
 #example-box("Path in un Grafo")[
   Consideriamo il grafo in @fig:05_graph_path. Possiamo notare che esiste un path tra il nodo 'Alice' e il nodo 'Marcus' che passa per 'Bob'. Il fatto che possiamo giungere da Alice a Marcus, passando per Bob, implica che Alice e Marcus sono 'conoscenti di conoscenti'.
   #figure(
-    image("../images/05_graph_traversal.png", width: 70%),
+    image("../images/ch05/05_graph_traversal.png", width: 70%),
     caption: "Rappresentazione delle relazione 'conoscenti di conoscenti' tramite un grafo",
   )<fig:05_graph_path>
 ]
@@ -102,7 +102,7 @@ L'idea alla base delle basi di dati a grafo è quella che sia estremamente impor
 @fig:05_graph_db_example mostra un esempio di come una base di dati a grafo possa essere utilizzata per rappresentare le relazioni tra utenti in un social network e in un sistema geospaziale.
 
 #figure(
-  image("../images/05:db_examples.png", width: 100%),
+  image("../images/ch05/05:db_examples.png", width: 100%),
   caption: "Esempi di basi di dati a grafo in un social network (a sinistra) e in un sistema geospaziale (a destra).",
 )<fig:05_graph_db_example>
 
@@ -118,7 +118,7 @@ Le basi di dati a grafo utilizzano un modello di dati chiamato *Property Graph M
 In @fig:05_property_graph_example è mostrato un esempio di property graph che rappresenta una piccola rete sociale.
 
 #figure(
-  image("../images/05_graph_data_model.png", width: 60%),
+  image("../images/ch05/05_graph_data_model.png", width: 60%),
   caption: "Esempio di Property Graph che rappresenta una rete sociale.",
 )<fig:05_property_graph_example>
 
@@ -130,14 +130,14 @@ In generale non viene imposto alcun vincolo sul tipo di dati, che possono essere
 Possiamo notare che l'utilizzo delle proprietà `Type` e `Label` corrisponde circa a dire che un certo nodo o una certa relazione tra nodi fanno parte di una certa *classe*. In questo modo, l'esempio in @fig:05_property_graph_example può essere riformulato reintroducendo il valore semantico delle relazioni nel grafo come viene fatto in @fig:05_graph_with_types.
 
 #figure(
-  image("../images/05_graph_with_types.png", width: 70%),
+  image("../images/ch05/05_graph_with_types.png", width: 70%),
   caption: "Esempio di Property Graph con tipi e label che rappresenta una rete sociale.",
 )<fig:05_graph_with_types>
 
 Non è obbligatorio, ma in generale possiamo aspettarci che nodi e archi che fanno parte di una stessa 'classe' condividano le stesse proprietà. Introduciamo un ultimo particolare vincolo, che riguarda la presenza di *multi-edge*, questi non possono connettere gli stessi nodi con la stessa "Label" di relazione. Vogliamo evitare questa situazione per evitare di avere *ambiguità* nell'interpretazione del grafo. @fig:05_multi_edge_with_different_labels mostra un esempio di multi-edge non ammesso.
 
 #figure(
-  image("../images/05_multiedge_invalid.png", width: 70%),
+  image("../images/ch05/05_multiedge_invalid.png", width: 70%),
   caption: "Esempio di multi-edge non ammesso dal momento che ha la stessa label di un altro arco già presente per collegare gli stessi nodi.",
 )<fig:05_multi_edge_with_different_labels>
 
@@ -184,7 +184,7 @@ Nel caso in cui di *multigrafi diretti* avremo la seguente situazione:
 - Nel caso di multigrafo diretto *con cicli*: nel caso in cui si verifichino $k$ loops del tipo $v_i, v_i$, andremo a scrivere $k$ nella cella $(i, i)$ della matrice di adiacenza
 
 #figure(
-  image("../images/05_graph2adjacency.png", width: 90%),
+  image("../images/ch05/05_graph2adjacency.png", width: 90%),
   caption: "Esempio di multigrafo non diretto con cicli (a sinistra) e la sua matrice di adiacenza (a destra).",
 )<fig:graph2ajdacency>
 
@@ -206,12 +206,12 @@ I valori nelle celle della matrice di incidenza saranno assegnati in maniera sim
 @fig:05_incidence_matrix_example_undirected e @fig:05_incidence_matrix_example_directed mostrano le differenze nella matrice di adiacenza nel caso di grafi diretti e indiretti.
 
 #figure(
-  image("../images/05_ndgraph_to_incidence.png", width: 90%),
+  image("../images/ch05/05_ndgraph_to_incidence.png", width: 90%),
   caption: "Esempio di multigrafo diretto con cicli (a sinistra) e la sua matrice di incidenza (a destra).",
 )<fig:05_incidence_matrix_example_undirected>
 
 #figure(
-  image("../images/05_dgraph_to_incidence.png", width: 90%),
+  image("../images/ch05/05_dgraph_to_incidence.png", width: 90%),
   caption: "Esempio di multigrafo diretto con cicli (a sinistra) e la sua matrice di incidenza (a destra).",
 )<fig:05_incidence_matrix_example_directed>
 
@@ -233,7 +233,7 @@ L'idea alla base di una lista di adiacenza è quella di memorizzare per ogni nod
 
 
 #figure(
-  image("../images/05_adj_list.png", width: 90%),
+  image("../images/ch05/05_adj_list.png", width: 90%),
   caption: "Esempio di rappresentazione di un grafo indiretto (a sinistra) e diretto (a destra) tramite liste di adiacenza.",
 )<fig:05_adj_list>
 
@@ -252,7 +252,7 @@ Di seguito andiamo ad elencarne vantaggi e svantaggi:
 
 
 #figure(
-  image("../images/05_incidence_list.png", width: 70%),
+  image("../images/ch05/05_incidence_list.png", width: 70%),
   caption: "Esempio di rappresentazione di un grafo indiretto (a sinistra) e diretto (a destra) tramite liste di incidenza.",
 )<fig:05_incidence_list>
 
@@ -328,7 +328,7 @@ Questa sezione va velocemente a riassumere i concetti fondamentali alla base di 
 L'immagine che segue mostra un esempio di un property graph model che contiene molteplici relazioni tra nodi, molte proprietà e tipi di nodi e relazioni diversi:
 
 #align(center)[
-  #image("../images/05_neo4j_propgraph.png", width: 65%)
+  #image("../images/ch05/05_neo4j_propgraph.png", width: 65%)
 ]
 
 L'idea alla base di Neo4j è quella di fornire uno strumento il più intuitivo e vicino possibile a ciò che un utente si aspetta quando pensa a un grafo.
@@ -337,7 +337,7 @@ L'idea alla base di Neo4j è quella di fornire uno strumento il più intuitivo e
 Dato un grafo abbiamo bisogno di un modo per poter interrogare i dati in esso contenuti. Neo4j fornisce un linguaggio di query chiamato *Cypher*, che è stato progettato specificamente per lavorare con grafi. Si tratta di un linguaggio *dichiarativo* che pone alla sua base il concetto di *pattern matching* sui grafi, in maniera simile a quello che facciamo con le _espressioni regolari_ sui testi. @fig:05_cypher_patternmatching mostra un esempio di come possiamo rappresentare dei pattern in Cypher.
 
 #figure(
-  image("../images/05_cypher_patmatching.png", width: 90%),
+  image("../images/ch05/05_cypher_patmatching.png", width: 90%),
   caption: "Esempio di pattern matching in Cypher per trovare nodi e relazioni specifiche all'interno di un grafo.",
 )<fig:05_cypher_patternmatching>
 
@@ -370,7 +370,7 @@ Nell'esempio di sopra non è stato specificato che l'entità amata da 'Dan' dove
 Vediamo ora un esempio leggermente più complesso. Consideriamo il grafo in @fig:05_social_recommendation, che rappresenta una rete sociale in cui gli utenti sono connessi tramite relazioni di amicizia e hanno ristoranti preferiti.
 
 #figure(
-  image("../images/05_social_recommendation.png", width: 75%),
+  image("../images/ch05/05_social_recommendation.png", width: 75%),
   caption: "Grafo che rappresenta una rete sociale con relazioni di amicizia e ristoranti preferiti.",
 )<fig:05_social_recommendation>
 
@@ -660,8 +660,8 @@ Cypher è dotato di una clausola specifica per questo scopo, che permette di par
 Ipotizziamo che il nostro property graph model sia descritto in @fig:05_ingestion_propgraph.
 
 #figure(
-  image("../images/05_ingestion_propgraph.png", width: 75%),
-  caption: "TODO: rifare in excalidraw ... Esempio di property graph model che rappresenta persone, film e le relazioni tra essi.",
+  image("../images/ch05/05_ingestion_propgraph.png", width: 70%),
+  caption: "Esempio di property graph model che rappresenta persone e film con relazioni",
 )<fig:05_ingestion_propgraph>
 
 Per ogni record del file `.csv` da utilizzare per l'ingestion vogliamo distinguere i casi seguenti:

@@ -53,6 +53,8 @@
 #include "chapters/chapter4.typ"
 #pagebreak()
 #include "chapters/chapter5.typ"
+#pagebreak()
+#include "chapters/chapter6.typ"
 
 #outline(
   title: "Indice delle figure",

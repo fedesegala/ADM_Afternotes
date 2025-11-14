@@ -45,7 +45,7 @@ In generale, ci si riferisce a MapReduce come un approccio di programmazione che
 
 #v(-2em)
 #figure(
-  image("../images/mapreduce.png"),
+  image("../images/ch02/mapreduce.png"),
   caption: [Esempio di applicazione dell'algoritmo MapReduce per contare le occorrenze di ogni parola all'interno di un input],
 )<fig:mapreduce-unooptimized>
 
@@ -56,7 +56,7 @@ In generale, ci si riferisce a MapReduce come un approccio di programmazione che
 - È possibile migliorare ulteriormente quanto presente in #ref(<fig:mapreduce-unooptimized>) applicando una procedura di *combinazione*, che consenta di combinare i risultati intermedi invece di mandarli alla procedura di riduzione in formato grezzo, tuttavia non è sempre garantito che questa operazione sia implementata sui sistemi che scegliamo di utilizzare
 
 #figure(
-  image("../images/mapcombinereduce.png"),
+  image("../images/ch02/mapcombinereduce.png"),
   caption: [Applicazione della funzionalità di combine al metodo MapReduce],
 )
 
@@ -128,7 +128,7 @@ Uno degli esempi più noti di document database è sicuramente *MongoDB*. Se vol
 Similmente ad un database relazionale, è invece possibile operare query per il recupero di dati o la costruzione di indici sia primari che secondari per migliorare l'efficienza. Per semplicità andiamo di seguito a stabilire un mapping tra un DBMS relazionale e MongoDB:
 
 #figure(
-  image("../images/mappingRDBMS_mongo.png", width: 50%),
+  image("../images/ch02/mappingRDBMS_mongo.png", width: 50%),
   numbering: none,
 )
 
@@ -138,7 +138,7 @@ L’aspetto più rilevante nell’utilizzo di questo modello risiede nella *semp
 
 Questa scelta, tuttavia, introduce un importante svantaggio: la *gestione delle modifiche ai dati*. Se, ad esempio, un utente compare in più contesti e si rende necessario aggiornare i dati relativi agli ordini a lui associati, sarà necessario applicare la modifica in *ogni copia* presente nel sistema. In caso contrario, la base di dati rischierebbe di diventare incoerente.
 #figure(
-  image("../images/denormalization.png"),
+  image("../images/ch02/denormalization.png"),
   caption: [
     Esempio di de-normalizzazione: a sinistra una struttura normalizzata basata su due entità distinte, a destra una rappresentazione de-normalizzata della stessa relazione.
   ],
@@ -146,7 +146,7 @@ Questa scelta, tuttavia, introduce un importante svantaggio: la *gestione delle 
 
 ==== Salvataggio Atomico
 Per quanto abbiamo citato che sia stato abbandonato il concetto di transazioni e delle loro proprietà "ACID", è comunque necessario anche in questo contesto andare a garantire consistenza, specialmente nel momento in cui più processi concorrenti vanno ad interrogare la base di dati. Per questo il paradigma adottato è quello del *salvataggio atomico*, che risulta comunque più semplice e rapido da effettuare rispetto all'esecuzione di una transazione.
-#figure(image("../images/atomic_save.png", width: 70%), caption: [Esempio di Salvataggio atomico])
+#figure(image("../images/ch02/atomic_save.png", width: 70%), caption: [Esempio di Salvataggio atomico])
 
 #pagebreak()
 ==== Altre caratteristiche di MongoDB
@@ -256,7 +256,8 @@ Per prima cosa andiamo a dare un rudimentale  schema per la collection `location
 
 #example-box("Locations v1 - Possibilità di filtrare per zipcode e per tags", [
   #align(center)[
-    #box(width: 90%)[ ```json
+    #box(width: 90%)[
+      ```json
       location = {
         name: "10gen East Coast",
         address: "134 5th Avenue 3rd Floor",
@@ -314,9 +315,11 @@ Ci piacerebbe andare a memorizzare anche le _coordinate_ di una posizione, in mo
 
   Per andare ora ad effettuare query che ci permettano di ottenere location vicine a delle certe coordinate possiamo andare ad utilizzare gli *operatori spaziali*:
 
-  ```javascript
-  db.locations.find({latlong:{$near[40,70]}})```
+
+  #raw(block: true, lang: "javascript", "db.locations.find({latlong:{$near: [40,70]}})")
+
 ])
+
 
 È comunque importante menzionare il fatto che per quanto sia possibile andare a memorizzare informazioni spaziali, MongoDB non è sicuramente il sistema più consono a questo scopo. Esistono infatti soluzioni più efficienti e studiate proprio per questo caso d'uso.
 
@@ -463,7 +466,7 @@ All'interno di MongoDB abbiamo a disposizione una *pipeline di aggregazione*.
   ```
   #v(-3em)
   #figure(
-    image("../images/aggregation_pipeline.png", width: 80%),
+    image("../images/ch02/aggregation_pipeline.png", width: 80%),
     caption: [Rappresentazione grafica della pipeline di aggregazione specificata nel codice sopra],
   ) <fig:aggregation_pipeline>
 ])
@@ -708,7 +711,7 @@ In generale l'algoritmo di MapReduce è estremamente flessibile e potente, tutta
 A partire dalla versione 3.2 di MongoDB sono state introdotte alcune funzionalità che vanno a migliorare le capacità di aggregazione del sistema. In particolare è stata introdotta la possibilità di utilizzare un *left-outer join*. L'utilizzo di questo operatore è possibile all'interno delle pipeline di aggregazione combinato a tutti gli altri operatori già visti e viene utilizzato tramite il comando *`lookup`*. Il comportamento che ci attendiamo da questo operatore è visibile in @fig:lookup.
 #v(-2em)
 #figure(
-  image("../images/lookup.png", width: 60%),
+  image("../images/ch02/lookup.png", width: 60%),
   caption: [Esempio di utilizzo dell'operatore `$lookup` per effettuare un left-outer join],
 )<fig:lookup>
 
